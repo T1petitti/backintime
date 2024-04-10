@@ -513,6 +513,11 @@ class MainWindow(QMainWindow):
                 icon.SHUTDOWN, _('Shutdown'),
                 None, None,
                 _('Shut down system after snapshot has finished.')),
+            'act_hibernate': (
+                icon.HIBERNATE, _('Hibernate'),
+                None, None,
+                _('Put the system into sleep mode')
+            ),
             'act_setup_language': (
                 None, _('Setup language…'),
                 self.slot_setup_language, None,
@@ -713,6 +718,7 @@ class MainWindow(QMainWindow):
             self.act_last_logview,
             self.act_settings,
             self.act_shutdown,
+            self.act_hibernate,
         ]
 
         # Add each action to toolbar
