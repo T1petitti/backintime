@@ -40,6 +40,7 @@ from packaging.version import Version
 from time import sleep
 
 import logger
+from enum import Enum, auto
 
 # Try to import keyring
 is_keyring_available = False
@@ -2167,8 +2168,17 @@ class ShutDown(object):
                                }
                    }
 
+    class MethodState(Enum):
+        """
+        States for the computer to take after taking a snapshot.
+        """
+        SHUTDOWN = auto()
+        SUSPEND = auto()
+        HIBERNATE = auto()
+
     def __init__(self):
         self.is_root = isRoot()
+        self.method_state = self.MethodState.SHUTDOWN
         if self.is_root:
             self.proxy, self.args = None, None
         else:
@@ -2201,7 +2211,7 @@ class ShutDown(object):
                 else:
                     bus = systembus
                 interface = bus.get_object(dbus_props['service'], dbus_props['objectPath'])
-                proxy = interface.get_dbus_method(dbus_props['method'], dbus_props['interface'])
+                proxy = interface.get_dbus_method(self.method_state"""TODO: get the one for distro""", dbus_props['interface'])
                 return((proxy, dbus_props['arguments']))
             except dbus.exceptions.DBusException:
                 continue
@@ -2254,6 +2264,15 @@ class ShutDown(object):
         m = re.match(r'unity ([\d\.]+)', unity_version)
 
         return m and Version(m.group(1)) >= Version('7.0') and processExists('unity-panel-service')
+
+    def set_method_state(self, new_state):
+        """
+        Set the user preference for whether the computer should
+        shutdown, suspend, or hibernate after taking a snapshot.
+        """
+        if not isinstance(new_state, self.MethodState):
+            raise ValueError(f"{new_state} is not a valid state")
+        self.method_state = new_state
 
 class SetupUdev(object):
     """
