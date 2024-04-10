@@ -2079,7 +2079,10 @@ class ShutDown(object):
     DBUS_SHUTDOWN ={'gnome':   {'bus':          'sessionbus',
                                 'service':      'org.gnome.SessionManager',
                                 'objectPath':   '/org/gnome/SessionManager',
-                                'method':       'Shutdown',
+                                'method_shutdown': 'Shutdown',
+                                'method_suspend': 'Suspend',
+                                'method_hibernate': 'Hibernate',
+                                'method_logout': 'Logout',
                                     #methods    Shutdown
                                     #           Reboot
                                     #           Logout
@@ -2211,7 +2214,7 @@ class ShutDown(object):
                 else:
                     bus = systembus
                 interface = bus.get_object(dbus_props['service'], dbus_props['objectPath'])
-                proxy = interface.get_dbus_method(self.method_state"""TODO: get the one for distro""", dbus_props['interface'])
+                proxy = interface.get_dbus_method(self.get_dbus_props_method(dbus_props), dbus_props['interface'])
                 return((proxy, dbus_props['arguments']))
             except dbus.exceptions.DBusException:
                 continue
@@ -2273,6 +2276,18 @@ class ShutDown(object):
         if not isinstance(new_state, self.MethodState):
             raise ValueError(f"{new_state} is not a valid state")
         self.method_state = new_state
+
+    def get_dbus_props_method(self, dbus_props):
+        """
+        Get the method-keyword based on the user's distro
+        and based on what method the user selected.
+        """
+        if self.method_state == self.MethodState.SHUTDOWN:
+            return dbus_props['method_shutdown']
+        elif self.method_state == self.MethodState.SUSPEND:
+            return dbus_props['method_suspend']
+        elif self.method_state == self.MethodState.HIBERNATE:
+            return dbus_props['method_hibernate']
 
 class SetupUdev(object):
     """
