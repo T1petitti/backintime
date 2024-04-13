@@ -2227,8 +2227,8 @@ class ShutDown(object):
                 continue
         return((None, None))
 
-    def set_interface_method(self):
-        self.method_state = self.MethodState.SUSPEND
+    def set_interface_method(self, new_state):
+        self.method_state = new_state
         self.interface.get_dbus_method(self.get_dbus_props_method(self.dbus_props, "gnome"), self.dbus_props['interface'])
 
     def canShutdown(self):
@@ -2318,9 +2318,12 @@ class ShutDown(object):
             return dbus_props['method']
 
         if self.method_state == self.MethodState.SHUTDOWN:
-            return dbus_props['method_suspend']#return dbus_props['method_shutdown']
+            return dbus_props['method_shutdown']
         elif self.method_state == self.MethodState.SUSPEND:
             return dbus_props['method_suspend']
+
+    def set_gnome_method(self, dbus_props):
+        pass
 
     def set_kde_method(self, dbus_props):
         """
@@ -2328,10 +2331,11 @@ class ShutDown(object):
         based on what method the user selected.
         2 shutdown
         """
+        dbus_args = dbus_props['arguments']
         if self.method_state == self.MethodState.SHUTDOWN:
-            dbus_props['arguments'] = (1, 2, 1) #dbus_props['arguments'][:1] + (0,) + dbus_props['arguments'][2:]
+            dbus_props['arguments'] = dbus_args[:1] + (0,) + dbus_args[2:]
         elif self.method_state == self.MethodState.SUSPEND:
-            dbus_props['arguments'] = dbus_props['arguments'][:1] + (1,) + dbus_props['arguments'][2:]
+            dbus_props['arguments'] = dbus_args[:1] + (1,) + dbus_args[2:]
 
 class SetupUdev(object):
     """
