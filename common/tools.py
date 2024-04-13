@@ -2190,6 +2190,7 @@ class ShutDown(object):
         else:
             self.proxy, self.args = self._prepair()
         self.activate_shutdown = False
+        self.activate_suspend = False
         self.started = False
 
     def _prepair(self):
@@ -2262,6 +2263,26 @@ class ShutDown(object):
             syncfs()
             self.started = True
             return(self.proxy(*self.args))
+
+    def suspend(self):
+        """
+        Run 'systemctl suspend' if we are root or
+        call the dbus proxy to trigger suspend.
+        """
+        if not self.activate_suspend:
+            return (False)
+        if self.is_root:
+            syncfs()
+            self.started = True
+            proc = subprocess.Popen(['systemctl', 'suspend'])
+            proc.communicate()
+            return proc.returncode
+        if self.proxy is None:
+            return (False)
+        else:
+            syncfs()
+            self.started = True
+            return (self.proxy(*self.args))
 
     def unity7(self):
         """
