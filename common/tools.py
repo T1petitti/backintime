@@ -2081,8 +2081,6 @@ class ShutDown(object):
                                 'objectPath':   '/org/gnome/SessionManager',
                                 'method_shutdown': 'Shutdown',
                                 'method_suspend': 'Suspend',
-                                'method_hibernate': 'Hibernate',
-                                'method_logout': 'Logout',
                                     #methods    Shutdown
                                     #           Reboot
                                     #           Logout
@@ -2096,7 +2094,7 @@ class ShutDown(object):
                     'kde':     {'bus':          'sessionbus',
                                 'service':      'org.kde.ksmserver',
                                 'objectPath':   '/KSMServer',
-                                'method':       'logout',
+                                'method': 'logout',
                                 'interface':    'org.kde.KSMServerInterface',
                                 'arguments':    (-1, 2, -1)
                                     #1st arg   -1 confirm
@@ -2111,7 +2109,8 @@ class ShutDown(object):
                     'xfce':    {'bus':          'sessionbus',
                                 'service':      'org.xfce.SessionManager',
                                 'objectPath':   '/org/xfce/SessionManager',
-                                'method':       'Shutdown',
+                                'method_shutdown': 'Shutdown',
+                                'method_suspend': 'Suspend',
                                     #methods    Shutdown
                                     #           Restart
                                     #           Suspend (no args)
@@ -2131,7 +2130,8 @@ class ShutDown(object):
                     'mate':    {'bus':          'sessionbus',
                                 'service':      'org.mate.SessionManager',
                                 'objectPath':   '/org/mate/SessionManager',
-                                'method':       'Shutdown',
+                                'method_shutdown': 'Shutdown',
+                                'method_suspend': 'Suspend',
                                     #methods    Shutdown
                                     #           Logout
                                 'interface':    'org.mate.SessionManager',
@@ -2144,7 +2144,8 @@ class ShutDown(object):
                     'e17':     {'bus':          'sessionbus',
                                 'service':      'org.enlightenment.Remote.service',
                                 'objectPath':   '/org/enlightenment/Remote/RemoteObject',
-                                'method':       'Halt',
+                                'method_shutdown': 'Halt',
+                                'method_suspend': 'Suspend',
                                     #methods    Halt -> Shutdown
                                     #           Reboot
                                     #           Logout
@@ -2156,7 +2157,8 @@ class ShutDown(object):
                     'e19':     {'bus':          'sessionbus',
                                 'service':      'org.enlightenment.wm.service',
                                 'objectPath':   '/org/enlightenment/wm/RemoteObject',
-                                'method':       'Shutdown',
+                                'method_shutdown': 'Shutdown',
+                                'method_suspend': 'Suspend',
                                     #methods    Shutdown
                                     #           Restart
                                 'interface':    'org.enlightenment.wm.Core',
@@ -2177,9 +2179,10 @@ class ShutDown(object):
         """
         SHUTDOWN = auto()
         SUSPEND = auto()
-        HIBERNATE = auto()
 
     def __init__(self):
+        self.interface = None
+        self.dbus_props = None
         self.is_root = isRoot()
         self.method_state = self.MethodState.SHUTDOWN
         if self.is_root:
@@ -2194,6 +2197,7 @@ class ShutDown(object):
         Try to connect to the given dbus services. If successful it will
         return a callable dbus proxy and those arguments.
         """
+
         try:
             if 'DBUS_SESSION_BUS_ADDRESS' in os.environ:
                 sessionbus = dbus.bus.BusConnection(os.environ['DBUS_SESSION_BUS_ADDRESS'])
@@ -2213,12 +2217,18 @@ class ShutDown(object):
                     bus = sessionbus
                 else:
                     bus = systembus
-                interface = bus.get_object(dbus_props['service'], dbus_props['objectPath'])
-                proxy = interface.get_dbus_method(self.get_dbus_props_method(dbus_props), dbus_props['interface'])
+                self.interface = bus.get_object(dbus_props['service'], dbus_props['objectPath'])
+                self.dbus_props = dbus_props
+                proxy = self.interface.get_dbus_method(self.get_dbus_props_method(dbus_props, de), self.dbus_props['interface'])
+
                 return((proxy, dbus_props['arguments']))
             except dbus.exceptions.DBusException:
                 continue
         return((None, None))
+
+    def set_interface_method(self):
+        self.method_state = self.MethodState.SUSPEND
+        self.interface.get_dbus_method(self.get_dbus_props_method(self.dbus_props, "gnome"), self.dbus_props['interface'])
 
     def canShutdown(self):
         """
@@ -2271,23 +2281,36 @@ class ShutDown(object):
     def set_method_state(self, new_state):
         """
         Set the user preference for whether the computer should
-        shutdown, suspend, or hibernate after taking a snapshot.
+        shutdown or suspend after taking a snapshot.
         """
         if not isinstance(new_state, self.MethodState):
             raise ValueError(f"{new_state} is not a valid state")
         self.method_state = new_state
 
-    def get_dbus_props_method(self, dbus_props):
+    def get_dbus_props_method(self, dbus_props, desktop_env):
         """
         Get the method-keyword based on the user's distro
         and based on what method the user selected.
         """
+        if desktop_env == "kde":
+            self.set_kde_method(dbus_props)
+            return dbus_props['method']
+
         if self.method_state == self.MethodState.SHUTDOWN:
-            return dbus_props['method_shutdown']
+            return dbus_props['method_suspend']#return dbus_props['method_shutdown']
         elif self.method_state == self.MethodState.SUSPEND:
             return dbus_props['method_suspend']
-        elif self.method_state == self.MethodState.HIBERNATE:
-            return dbus_props['method_hibernate']
+
+    def set_kde_method(self, dbus_props):
+        """
+        When the user's distro is kde, set the int-argument
+        based on what method the user selected.
+        2 shutdown
+        """
+        if self.method_state == self.MethodState.SHUTDOWN:
+            dbus_props['arguments'] = (1, 2, 1) #dbus_props['arguments'][:1] + (0,) + dbus_props['arguments'][2:]
+        elif self.method_state == self.MethodState.SUSPEND:
+            dbus_props['arguments'] = dbus_props['arguments'][:1] + (1,) + dbus_props['arguments'][2:]
 
 class SetupUdev(object):
     """

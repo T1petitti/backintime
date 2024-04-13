@@ -1183,6 +1183,7 @@ class MainWindow(QMainWindow):
             self.timeLine.checkSelection()
 
     def btnTakeSnapshotClicked(self):
+        self.shutdown.set_interface_method()
         backintime.takeSnapshotAsync(self.config)
         self.updateTakeSnapshot(True)
 
