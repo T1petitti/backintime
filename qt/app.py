@@ -581,7 +581,7 @@ class MainWindow(QMainWindow):
 
             # Could be moved into dedicated preferences window in the future
             'act_show_icon_text':  (
-                icon.SETTINGS, _('Show icon text'),
+                None, _('Show icon text'),
                 self.btnShowIconTextClicked, None, None),
         }
 
@@ -591,6 +591,10 @@ class MainWindow(QMainWindow):
             # Create action (with icon)
             action = QAction(ico, txt, self) if ico else \
                 QAction(txt, self)
+
+            # Make items checkboxes
+            if attr == 'act_show_icon_text':
+                action.setCheckable(True)
 
             # Connect handler function
             if slot:
