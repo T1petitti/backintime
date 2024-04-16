@@ -578,6 +578,11 @@ class MainWindow(QMainWindow):
             'act_snapshots_dialog': (
                 icon.SNAPSHOTS, _('Compare snapshots…'),
                 self.btnSnapshotsClicked, None, None),
+
+            # Could be moved into dedicated preferences window in the future
+            'act_show_icon_text':  (
+                icon.SETTINGS, _('Show icon text'),
+                self.btnShowIconTextClicked, None, None),
         }
 
         for attr in action_dict:
@@ -654,6 +659,9 @@ class MainWindow(QMainWindow):
                 self.act_restore_parent,
                 self.act_restore_parent_to,
             ),
+            _('&Preferences'): (
+                self.act_show_icon_text
+            ),
             _('&Help'): (
                 self.act_help_help,
                 self.act_help_configfile,
@@ -667,9 +675,9 @@ class MainWindow(QMainWindow):
             )
         }
 
-        for key in menu_dict:
+        for key, val in menu_dict.items():
             menu = self.menuBar().addMenu(key)
-            menu.addActions(menu_dict[key])
+            menu.addActions(val) if isinstance(val, tuple) else menu.addAction(val)
             menu.setToolTipsVisible(True)
 
         # The action of the restore menu. It is used by the menuBar and by the
@@ -1889,6 +1897,9 @@ files that the receiver requests to be transferred.""")
 
     def slot_help_translation(self):
         self._open_approach_translator_dialog()
+
+    def btnShowIconTextClicked(self, checked):
+        pass  # TODO
 
 
 class ExtraMouseButtonEventFilter(QObject):
