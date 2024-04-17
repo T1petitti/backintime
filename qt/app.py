@@ -580,9 +580,9 @@ class MainWindow(QMainWindow):
                 self.btnSnapshotsClicked, None, None),
 
             # Could be moved into dedicated preferences window in the future
-            'act_show_icon_text':  (
-                None, _('Show icon text'),
-                self.btnShowIconTextClicked, None, None),
+            'act_show_toolbar_text':  (
+                None, _('Show toolbar text'),
+                self.btnShowToolbarTextClicked, None, None),
         }
 
         for attr in action_dict:
@@ -593,7 +593,7 @@ class MainWindow(QMainWindow):
                 QAction(txt, self)
 
             # Make items checkboxes
-            if attr == 'act_show_icon_text':
+            if attr == 'act_show_toolbar_text':
                 action.setCheckable(True)
 
             # Connect handler function
@@ -664,7 +664,7 @@ class MainWindow(QMainWindow):
                 self.act_restore_parent_to,
             ),
             _('&Preferences'): (
-                self.act_show_icon_text
+                self.act_show_toolbar_text
             ),
             _('&Help'): (
                 self.act_help_help,
@@ -733,16 +733,17 @@ class MainWindow(QMainWindow):
 
             # Assume an explicit tooltip if it is different from "text()".
             # Note that Qt use "text()" as "toolTip()" by default.
-            if act.toolTip() != act.text():
+            if act.toolTip() == act.text():
+                continue
 
-                if QApplication.instance().isRightToLeft():
-                    # RTL/BIDI language like Hebrew
-                    button_tip = f'{act.toolTip()} :{act.text()}'
-                else:
-                    # (default) LTR language (e.g. English)
-                    button_tip = f'{act.text()}: {act.toolTip()}'
+            if QApplication.instance().isRightToLeft():
+                # RTL/BIDI language like Hebrew
+                button_tip = f'{act.toolTip()} :{act.text()}'
+            else:
+                # (default) LTR language (e.g. English)
+                button_tip = f'{act.text()}: {act.toolTip()}'
 
-                toolbar.widgetForAction(act).setToolTip(button_tip)
+            toolbar.widgetForAction(act).setToolTip(button_tip)
 
         # toolbar sub menu: take snapshot
         submenu_take_snapshot = QMenu(self)
@@ -1902,7 +1903,7 @@ files that the receiver requests to be transferred.""")
     def slot_help_translation(self):
         self._open_approach_translator_dialog()
 
-    def btnShowIconTextClicked(self, checked):
+    def btnShowToolbarTextClicked(self, checked):
         pass  # TODO
 
 
