@@ -75,7 +75,7 @@ VIEW_LAST_LOG       = QIcon.fromTheme('document-open-recent')  # 'document-open-
 SETTINGS            = QIcon.fromTheme('gtk-preferences',
                       QIcon.fromTheme('configure'))
 SHUTDOWN            = QIcon.fromTheme('system-shutdown')
-HIBERNATE           = QIcon.fromTheme('system-hibernate')  # system-hibernate
+SUSPEND           = QIcon.fromTheme('system-suspend')  # system-suspend
 EXIT                = QIcon.fromTheme('gtk-close',
                       QIcon.fromTheme('application-exit'))
 

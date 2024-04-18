@@ -513,8 +513,8 @@ class MainWindow(QMainWindow):
                 icon.SHUTDOWN, _('Shutdown'),
                 None, None,
                 _('Shut down system after snapshot has finished.')),
-            'act_hibernate': (
-                icon.HIBERNATE, _('Hibernate'),
+            'act_suspend': (
+                icon.SUSPEND, _('Suspend'),
                 None, None,
                 _('Put the system into sleep mode')
             ),
@@ -718,7 +718,7 @@ class MainWindow(QMainWindow):
             self.act_last_logview,
             self.act_settings,
             self.act_shutdown,
-            self.act_hibernate,
+            self.act_suspend,
         ]
 
         # Add each action to toolbar
@@ -754,6 +754,7 @@ class MainWindow(QMainWindow):
         # separators and stretchers
         toolbar.insertSeparator(self.act_settings)
         toolbar.insertSeparator(self.act_shutdown)
+        toolbar.insertSeparator(self.act_suspend)
 
     def _create_and_get_filesview_toolbar(self):
         """Create the filesview toolbar object, connect it to actions and
@@ -1001,9 +1002,10 @@ class MainWindow(QMainWindow):
                 if takeSnapshotMessage[0] == 0:
                     takeSnapshotMessage = (0, _('Done, no backup needed'))
 
-            if self.shutdown.method_state == self.shutdown.MethodState.SHUTDOWN:
+           # if self.shutdown.method_state == self.shutdown.MethodState.SHUTDOWN:
+            #    self.shutdown.shutdown()
+            #else:
                 self.shutdown.shutdown()
-            else:
                 self.shutdown.suspend()
 
         if takeSnapshotMessage != self.lastTakeSnapshotMessage or force_update:
@@ -1192,7 +1194,7 @@ class MainWindow(QMainWindow):
             self.timeLine.checkSelection()
 
     def btnTakeSnapshotClicked(self):
-        self.shutdown.set_interface_method(self.shutdown.MethodState.SUSPEND)
+        #self.shutdown.set_interface_method(self.shutdown.MethodState.SUSPEND)
         backintime.takeSnapshotAsync(self.config)
         self.updateTakeSnapshot(True)
 
@@ -1298,7 +1300,11 @@ class MainWindow(QMainWindow):
 
     def btnShutdownToggled(self, checked):
         self.shutdown.activate_shutdown = checked
-        self.shutdown.activate_suspend = checked#TODO
+
+
+    def btnSuspendToggled(self, checked):
+        self.shutdown.activate_suspend = checked
+
 
     def contextMenuClicked(self, point):
         self.contextMenu.exec(self.filesView.mapToGlobal(point))
