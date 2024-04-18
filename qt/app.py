@@ -133,7 +133,8 @@ class MainWindow(QMainWindow):
         # shortcuts without buttons
         self._create_shortcuts_without_actions()
 
-        self._create_actions()
+        show_toolbar_text = False  # TODO
+        self._create_actions(show_toolbar_text)
         self._create_menubar()
         self._create_main_toolbar()
 
@@ -434,7 +435,7 @@ class MainWindow(QMainWindow):
     def showHiddenFiles(self, value):
         self.config.setBoolValue('qt.show_hidden_files', value)
 
-    def _create_actions(self):
+    def _create_actions(self, show_toolbar_text):
         """Create all action objects used by this main window.
 
         All actions are stored as instance attributes to ``self`` and their
@@ -589,8 +590,8 @@ class MainWindow(QMainWindow):
             ico, txt, slot, keys, tip = action_dict[attr]
 
             # Create action (with icon)
-            action = QAction(ico, txt, self) if ico else \
-                QAction(txt, self)
+            action = QAction(ico, txt, self) if ico and not show_toolbar_text else \
+                QAction(txt, self)  # TODO
 
             # Make items checkboxes
             if attr == 'act_show_toolbar_text':
@@ -1904,7 +1905,8 @@ files that the receiver requests to be transferred.""")
         self._open_approach_translator_dialog()
 
     def btnShowToolbarTextClicked(self, checked):
-        pass  # TODO
+        self._create_actions(checked)
+        self._create_main_toolbar()
 
 
 class ExtraMouseButtonEventFilter(QObject):
