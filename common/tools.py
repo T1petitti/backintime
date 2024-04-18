@@ -40,6 +40,7 @@ from packaging.version import Version
 from time import sleep
 
 import logger
+from enum import Enum, auto
 
 # Try to import keyring
 is_keyring_available = False
@@ -2174,7 +2175,6 @@ class ShutDown(object):
         else:
             self.proxy, self.args = self._prepair()
         self.activate_shutdown = False
-        self.activate_suspend = False
         self.started = False
 
     def _prepair(self):

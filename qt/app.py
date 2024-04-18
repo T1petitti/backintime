@@ -1001,7 +1001,10 @@ class MainWindow(QMainWindow):
                 if takeSnapshotMessage[0] == 0:
                     takeSnapshotMessage = (0, _('Done, no backup needed'))
 
-            self.shutdown.shutdown()
+            if self.shutdown.method_state == self.shutdown.MethodState.SHUTDOWN:
+                self.shutdown.shutdown()
+            else:
+                self.shutdown.suspend()
 
         if takeSnapshotMessage != self.lastTakeSnapshotMessage or force_update:
             self.lastTakeSnapshotMessage = takeSnapshotMessage
@@ -1189,6 +1192,7 @@ class MainWindow(QMainWindow):
             self.timeLine.checkSelection()
 
     def btnTakeSnapshotClicked(self):
+        self.shutdown.set_interface_method(self.shutdown.MethodState.SUSPEND)
         backintime.takeSnapshotAsync(self.config)
         self.updateTakeSnapshot(True)
 
@@ -1294,6 +1298,7 @@ class MainWindow(QMainWindow):
 
     def btnShutdownToggled(self, checked):
         self.shutdown.activate_shutdown = checked
+        self.shutdown.activate_suspend = checked#TODO
 
     def contextMenuClicked(self, point):
         self.contextMenu.exec(self.filesView.mapToGlobal(point))
