@@ -466,6 +466,16 @@ def createParsers(app_name = 'backintime'):
     snapshotsPathCP.set_defaults(func = snapshotsPath)
     parsers[command] = snapshotsPathCP
 
+    command = 'suspend'
+    nargs = 0
+    description = 'Suspend the computer after the snapshot is done.'
+    suspendCP = subparsers.add_parser(command,
+                                       epilog=epilogCommon,
+                                       help=description,
+                                       description=description)
+    suspendCP.set_defaults(func=suspend)
+    parsers[command] = suspendCP
+
     command = 'unmount'
     nargs = 0
     aliases.append((command, nargs))
@@ -835,6 +845,50 @@ def shutdown(args):
     else:
         logger.info('Shutdown now.')
         sd.shutdown()
+    sys.exit(RETURN_OK)
+
+def suspend(args):
+    """
+    Command for suspending the computer after the current snapshot has
+    finished.
+
+    Args:
+        args (argparse.Namespace):
+                        previously parsed arguments
+
+    Raises:
+        SystemExit:     0 if successful; 1 if it failed either because there is
+                        no active snapshot for this profile or suspend is not
+                        supported.
+    """
+    setQuiet(args)
+    printHeader()
+    cfg = getConfig(args)
+
+    sd = tools.ShutDown()
+    if not sd.canShutdown():
+        logger.warning('Suspend is not supported.')
+        sys.exit(RETURN_ERR)
+
+    instance = ApplicationInstance(cfg.takeSnapshotInstanceFile(), False)
+    profile = '='.join((cfg.currentProfile(), cfg.profileName()))
+    if not instance.busy():
+        logger.info('There is no active snapshot for profile %s. Skip suspend.'
+                    % profile)
+        sys.exit(RETURN_ERR)
+
+    print('Suspend is waiting for the snapshot in profile %s to end.\nPress CTRL+C to interrupt suspend.\n'
+          % profile)
+    sd.activate_suspend = True
+    try:
+        while instance.busy():
+            logger.debug('Snapshot is still active. Wait for suspend.')
+            sleep(5)
+    except KeyboardInterrupt:
+        print('Suspend interrupted.')
+    else:
+        logger.info('Suspend now.')
+        sd.suspend()
     sys.exit(RETURN_OK)
 
 def snapshotsPath(args):
