@@ -1002,11 +1002,8 @@ class MainWindow(QMainWindow):
                 if takeSnapshotMessage[0] == 0:
                     takeSnapshotMessage = (0, _('Done, no backup needed'))
 
-           # if self.shutdown.method_state == self.shutdown.MethodState.SHUTDOWN:
-            #    self.shutdown.shutdown()
-            #else:
-                self.shutdown.shutdown()
-                self.shutdown.suspend()
+            self.shutdown.shutdown()
+            self.shutdown.suspend()
 
         if takeSnapshotMessage != self.lastTakeSnapshotMessage or force_update:
             self.lastTakeSnapshotMessage = takeSnapshotMessage
