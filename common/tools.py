@@ -40,7 +40,6 @@ from packaging.version import Version
 from time import sleep
 
 import logger
-from enum import Enum, auto
 
 # Try to import keyring
 is_keyring_available = False
@@ -2079,7 +2078,7 @@ class ShutDown(object):
     DBUS_SHUTDOWN ={'gnome':   {'bus':          'sessionbus',
                                 'service':      'org.gnome.SessionManager',
                                 'objectPath':   '/org/gnome/SessionManager',
-                                'method':       'Shutdown',
+                                'method':       ['Shutdown'],
                                     #methods    Shutdown
                                     #           Reboot
                                     #           Logout
@@ -2093,7 +2092,7 @@ class ShutDown(object):
                     'kde':     {'bus':          'sessionbus',
                                 'service':      'org.kde.ksmserver',
                                 'objectPath':   '/KSMServer',
-                                'method':       'logout',
+                                'method':       ['logout'],
                                 'interface':    'org.kde.KSMServerInterface',
                                 'arguments':    (-1, 2, -1)
                                     #1st arg   -1 confirm
@@ -2108,8 +2107,8 @@ class ShutDown(object):
                     'xfce':    {'bus':          'sessionbus',
                                 'service':      'org.xfce.SessionManager',
                                 'objectPath':   '/org/xfce/SessionManager',
-                                'method':       'Shutdown',
-                                    #methods    Shutdown
+                                'method':       ['Shutdown',
+                                                 'Suspend'],
                                     #           Restart
                                     #           Suspend (no args)
                                     #           Hibernate (no args)
@@ -2128,7 +2127,7 @@ class ShutDown(object):
                     'mate':    {'bus':          'sessionbus',
                                 'service':      'org.mate.SessionManager',
                                 'objectPath':   '/org/mate/SessionManager',
-                                'method':       'Shutdown',
+                                'method':       ['Shutdown'],
                                     #methods    Shutdown
                                     #           Logout
                                 'interface':    'org.mate.SessionManager',
@@ -2141,7 +2140,7 @@ class ShutDown(object):
                     'e17':     {'bus':          'sessionbus',
                                 'service':      'org.enlightenment.Remote.service',
                                 'objectPath':   '/org/enlightenment/Remote/RemoteObject',
-                                'method':       'Halt',
+                                'method':       ['Halt'],
                                     #methods    Halt -> Shutdown
                                     #           Reboot
                                     #           Logout
@@ -2153,7 +2152,7 @@ class ShutDown(object):
                     'e19':     {'bus':          'sessionbus',
                                 'service':      'org.enlightenment.wm.service',
                                 'objectPath':   '/org/enlightenment/wm/RemoteObject',
-                                'method':       'Shutdown',
+                                'method':       ['Shutdown'],
                                     #methods    Shutdown
                                     #           Restart
                                 'interface':    'org.enlightenment.wm.Core',
@@ -2162,7 +2161,7 @@ class ShutDown(object):
                     'z_freed': {'bus':          'systembus',
                                 'service':      'org.freedesktop.login1',
                                 'objectPath':   '/org/freedesktop/login1',
-                                'method':       'PowerOff',
+                                'method':       ['PowerOff'],
                                 'interface':    'org.freedesktop.login1.Manager',
                                 'arguments':    (True,)
                                }
@@ -2173,11 +2172,14 @@ class ShutDown(object):
         if self.is_root:
             self.proxy, self.args = None, None
         else:
-            self.proxy, self.args = self._prepair()
+            self.proxy, self.args = self._prepair(0)
+        self.shutdown_params = None
+        self.suspend_params = None
         self.activate_shutdown = False
+        self.activate_suspend = False
         self.started = False
 
-    def _prepair(self):
+    def _prepair(self,method_num):
         """
         Try to connect to the given dbus services. If successful it will
         return a callable dbus proxy and those arguments.
@@ -2202,7 +2204,7 @@ class ShutDown(object):
                 else:
                     bus = systembus
                 interface = bus.get_object(dbus_props['service'], dbus_props['objectPath'])
-                proxy = interface.get_dbus_method(dbus_props['method'], dbus_props['interface'])
+                proxy = interface.get_dbus_method(dbus_props['method'][method_num], dbus_props['interface'])
                 return((proxy, dbus_props['arguments']))
             except dbus.exceptions.DBusException:
                 continue
@@ -2237,6 +2239,7 @@ class ShutDown(object):
         if self.proxy is None:
             return(False)
         else:
+            self.proxy, self.args = self._prepair(0)
             syncfs()
             self.started = True
             return(self.proxy(*self.args))
@@ -2257,6 +2260,7 @@ class ShutDown(object):
         if self.proxy is None:
             return(False)
         else:
+            self.proxy,self.args = self._prepair(1)
             syncfs()
             self.started = True
             return(self.proxy(*self.args))
