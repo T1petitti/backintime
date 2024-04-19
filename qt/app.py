@@ -133,7 +133,8 @@ class MainWindow(QMainWindow):
         # shortcuts without buttons
         self._create_shortcuts_without_actions()
 
-        self.actions = None
+        self.action_dict = None
+        self.actions = {}
         show_toolbar_text = False  # TODO
         self._create_actions(show_toolbar_text)
         self._create_menubar()
@@ -454,7 +455,7 @@ class MainWindow(QMainWindow):
             `QAction.setShortcut()` (singular; without ``s`` at the end).
         """
 
-        action_dict = {
+        self.action_dict = {
             # because of "icon"
             # pylint: disable=undefined-variable
 
@@ -587,14 +588,14 @@ class MainWindow(QMainWindow):
                 self.btnShowToolbarTextClicked, None, None),
         }
 
-        for attr in action_dict:
-            ico, txt, slot, keys, tip = action_dict[attr]
+        for attr in self.action_dict:
+            ico, txt, slot, keys, tip = self.action_dict[attr]
 
             # Create action (with icon)
             action = QAction(ico, txt, self) if ico and not show_toolbar_text else \
                 QAction(txt, self)
 
-            self.actions.append(action)
+            self.actions[attr] = action
 
             # Make items checkboxes
             if attr == 'act_show_toolbar_text':
@@ -1908,8 +1909,18 @@ files that the receiver requests to be transferred.""")
         self._open_approach_translator_dialog()
 
     def btnShowToolbarTextClicked(self, checked):
-        self._create_actions(checked)
-        self._create_main_toolbar()
+        for attr in self.action_dict:
+            ico, txt, slot, keys, tip = self.action_dict[attr]
+            action = self.actions[attr]
+
+            if ico and not checked:
+                action.setText("")
+                action.setIcon(ico)
+            else:
+                action.setIcon(QIcon())
+                action.setText(txt)
+
+            setattr(self, attr, action)
 
 
 class ExtraMouseButtonEventFilter(QObject):
