@@ -28,6 +28,7 @@ import shutil
 import signal
 from contextlib import contextmanager
 from tempfile import TemporaryDirectory
+import json
 
 # We need to import common/tools.py
 import qttools_path
@@ -133,9 +134,15 @@ class MainWindow(QMainWindow):
         # shortcuts without buttons
         self._create_shortcuts_without_actions()
 
+        self.main_preferences = self.get_preferences()
+        if self.main_preferences is None:
+            self.main_preferences = {'show_toolbar_text': False}
+            self.save_preferences()
+
         self.action_dict = None
         self.actions = {}
-        show_toolbar_text = False  # TODO
+        show_toolbar_text = self.main_preferences['show_toolbar_text']
+
         self._create_actions(show_toolbar_text)
         self._create_menubar()
         self._create_main_toolbar()
@@ -600,6 +607,7 @@ class MainWindow(QMainWindow):
             # Make items checkboxes
             if attr == 'act_show_toolbar_text':
                 action.setCheckable(True)
+                action.setChecked(show_toolbar_text)
 
             # Connect handler function
             if slot:
@@ -1909,6 +1917,9 @@ files that the receiver requests to be transferred.""")
         self._open_approach_translator_dialog()
 
     def btnShowToolbarTextClicked(self, checked):
+        self.main_preferences['show_toolbar_text'] = checked
+        self.save_preferences()
+
         for attr in self.action_dict:
             ico, txt, slot, keys, tip = self.action_dict[attr]
             action = self.actions[attr]
@@ -1921,6 +1932,18 @@ files that the receiver requests to be transferred.""")
                 action.setText(txt)
 
             setattr(self, attr, action)
+
+    def get_preferences(self):
+        file = 'main_preferences'
+        if not os.path.exists(file) or os.path.getsize(file) == 0:
+            return
+
+        with open('main_preferences', 'r') as file:
+            return json.load(file)
+
+    def save_preferences(self):
+        with open('main_preferences', 'w') as file:
+            json.dump(self.main_preferences, file, indent=4)
 
 
 class ExtraMouseButtonEventFilter(QObject):
