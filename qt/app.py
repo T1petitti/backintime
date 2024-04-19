@@ -1300,11 +1300,11 @@ class MainWindow(QMainWindow):
 
     def btnShutdownToggled(self, checked):
         self.shutdown.activate_shutdown = checked
-
+        self.act_suspend.setEnabled(not checked)
 
     def btnSuspendToggled(self, checked):
         self.shutdown.activate_suspend = checked
-
+        self.act_shutdown.setEnabled(not checked)
 
     def contextMenuClicked(self, point):
         self.contextMenu.exec(self.filesView.mapToGlobal(point))
