@@ -133,6 +133,7 @@ class MainWindow(QMainWindow):
         # shortcuts without buttons
         self._create_shortcuts_without_actions()
 
+        self.actions = None
         show_toolbar_text = False  # TODO
         self._create_actions(show_toolbar_text)
         self._create_menubar()
@@ -591,7 +592,9 @@ class MainWindow(QMainWindow):
 
             # Create action (with icon)
             action = QAction(ico, txt, self) if ico and not show_toolbar_text else \
-                QAction(txt, self)  # TODO
+                QAction(txt, self)
+
+            self.actions.append(action)
 
             # Make items checkboxes
             if attr == 'act_show_toolbar_text':
