@@ -141,12 +141,11 @@ class MainWindow(QMainWindow):
 
         self.actions_for_toolbar = None
         self.icon_text_actions = []
-        show_toolbar_text = self.main_preferences['show_toolbar_text']
         self.toolbar = None
 
-        self._create_actions(show_toolbar_text)
+        self._create_actions()
         self._create_menubar()
-        self._create_main_toolbar(show_toolbar_text)
+        self._create_main_toolbar()
 
         # timeline (left widget)
         self.timeLine = qttools.TimeLine(self)
@@ -445,7 +444,7 @@ class MainWindow(QMainWindow):
     def showHiddenFiles(self, value):
         self.config.setBoolValue('qt.show_hidden_files', value)
 
-    def _create_actions(self, show_toolbar_text):
+    def _create_actions(self):
         """Create all action objects used by this main window.
 
         All actions are stored as instance attributes to ``self`` and their
@@ -608,7 +607,7 @@ class MainWindow(QMainWindow):
             # Make items checkboxes
             if attr == 'act_show_toolbar_text':
                 action.setCheckable(True)
-                action.setChecked(show_toolbar_text)
+                action.setChecked(self.main_preferences['show_toolbar_text'])
 
             # Connect handler function
             if slot:
@@ -717,7 +716,7 @@ class MainWindow(QMainWindow):
         restore.insertSeparator(self.act_restore_parent)
         restore.setToolTipsVisible(True)
 
-    def _create_main_toolbar(self, show_toolbar_text):
+    def _create_main_toolbar(self):
         """Create the main toolbar and connect it to actions."""
 
         self.toolbar = self.addToolBar('main')
@@ -776,7 +775,7 @@ class MainWindow(QMainWindow):
         self.toolbar.insertSeparator(self.act_settings)
         self.toolbar.insertSeparator(self.act_shutdown)
 
-        self.set_toolbar_icon_text(show_toolbar_text)
+        self.set_toolbar_icon_text()
 
     def _create_and_get_filesview_toolbar(self):
         """Create the filesview toolbar object, connect it to actions and
@@ -1182,6 +1181,8 @@ class MainWindow(QMainWindow):
         self.act_name_snapshot.setEnabled(enabled)
         self.act_remove_snapshot.setEnabled(enabled)
         self.act_snapshot_logview.setEnabled(enabled)
+
+        self.set_toolbar_icon_text()
 
     def timeLineChanged(self):
         item = self.timeLine.currentItem()
@@ -1922,15 +1923,14 @@ files that the receiver requests to be transferred.""")
     def btnShowToolbarTextClicked(self, checked):
         self.main_preferences['show_toolbar_text'] = checked
         self.save_preferences()
-        self.set_toolbar_icon_text(checked)
+        self.set_toolbar_icon_text()
 
-    def set_toolbar_icon_text(self, show_toolbar_text):
+    def set_toolbar_icon_text(self):
         for action in self.actions_for_toolbar:
             attr, act, ico, txt = [a for a in self.icon_text_actions if a[1] == action][0]
-            print(attr, act, ico, txt)
             widget = self.toolbar.widgetForAction(act)
 
-            if show_toolbar_text or not ico:
+            if self.main_preferences['show_toolbar_text'] or not ico:
                 widget.setIcon(QIcon())
             else:
                 widget.setIcon(ico)
