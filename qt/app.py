@@ -139,13 +139,14 @@ class MainWindow(QMainWindow):
             self.main_preferences = {'show_toolbar_text': False}
             self.save_preferences()
 
-        self.action_dict = None
-        self.actions = {}
+        self.actions_for_toolbar = None
+        self.icon_text_actions = []
         show_toolbar_text = self.main_preferences['show_toolbar_text']
+        self.toolbar = None
 
         self._create_actions(show_toolbar_text)
         self._create_menubar()
-        self._create_main_toolbar()
+        self._create_main_toolbar(show_toolbar_text)
 
         # timeline (left widget)
         self.timeLine = qttools.TimeLine(self)
@@ -462,7 +463,7 @@ class MainWindow(QMainWindow):
             `QAction.setShortcut()` (singular; without ``s`` at the end).
         """
 
-        self.action_dict = {
+        action_dict = {
             # because of "icon"
             # pylint: disable=undefined-variable
 
@@ -595,14 +596,14 @@ class MainWindow(QMainWindow):
                 self.btnShowToolbarTextClicked, None, None),
         }
 
-        for attr in self.action_dict:
-            ico, txt, slot, keys, tip = self.action_dict[attr]
+        for attr in action_dict:
+            ico, txt, slot, keys, tip = action_dict[attr]
 
             # Create action (with icon)
-            action = QAction(ico, txt, self) if ico and not show_toolbar_text else \
+            action = QAction(ico, txt, self) if ico else \
                 QAction(txt, self)
 
-            self.actions[attr] = action
+            self.icon_text_actions.append([attr, action, ico, txt])
 
             # Make items checkboxes
             if attr == 'act_show_toolbar_text':
@@ -716,17 +717,17 @@ class MainWindow(QMainWindow):
         restore.insertSeparator(self.act_restore_parent)
         restore.setToolTipsVisible(True)
 
-    def _create_main_toolbar(self):
+    def _create_main_toolbar(self, show_toolbar_text):
         """Create the main toolbar and connect it to actions."""
 
-        toolbar = self.addToolBar('main')
-        toolbar.setFloatable(False)
+        self.toolbar = self.addToolBar('main')
+        self.toolbar.setFloatable(False)
 
         # Drop-Down: Profiles
         self.comboProfiles = qttools.ProfileCombo(self)
-        self.comboProfilesAction = toolbar.addWidget(self.comboProfiles)
+        self.comboProfilesAction = self.toolbar.addWidget(self.comboProfiles)
 
-        actions_for_toolbar = [
+        self.actions_for_toolbar = [
             self.act_take_snapshot,
             self.act_pause_take_snapshot,
             self.act_resume_take_snapshot,
@@ -741,8 +742,8 @@ class MainWindow(QMainWindow):
         ]
 
         # Add each action to toolbar
-        for act in actions_for_toolbar:
-            toolbar.addAction(act)
+        for act in self.actions_for_toolbar:
+            self.toolbar.addAction(act)
 
             # Assume an explicit tooltip if it is different from "text()".
             # Note that Qt use "text()" as "toolTip()" by default.
@@ -756,7 +757,7 @@ class MainWindow(QMainWindow):
                 # (default) LTR language (e.g. English)
                 button_tip = f'{act.text()}: {act.toolTip()}'
 
-            toolbar.widgetForAction(act).setToolTip(button_tip)
+            self.toolbar.widgetForAction(act).setToolTip(button_tip)
 
         # toolbar sub menu: take snapshot
         submenu_take_snapshot = QMenu(self)
@@ -765,15 +766,17 @@ class MainWindow(QMainWindow):
         submenu_take_snapshot.setToolTipsVisible(True)
 
         # get the toolbar buttons widget...
-        button_take_snapshot = toolbar.widgetForAction(self.act_take_snapshot)
+        button_take_snapshot = self.toolbar.widgetForAction(self.act_take_snapshot)
         # ...and add the menu to it
         button_take_snapshot.setMenu(submenu_take_snapshot)
         button_take_snapshot.setPopupMode(
             QToolButton.ToolButtonPopupMode.MenuButtonPopup)
 
         # separators and stretchers
-        toolbar.insertSeparator(self.act_settings)
-        toolbar.insertSeparator(self.act_shutdown)
+        self.toolbar.insertSeparator(self.act_settings)
+        self.toolbar.insertSeparator(self.act_shutdown)
+
+        self.set_toolbar_icon_text(show_toolbar_text)
 
     def _create_and_get_filesview_toolbar(self):
         """Create the filesview toolbar object, connect it to actions and
@@ -1919,19 +1922,20 @@ files that the receiver requests to be transferred.""")
     def btnShowToolbarTextClicked(self, checked):
         self.main_preferences['show_toolbar_text'] = checked
         self.save_preferences()
+        self.set_toolbar_icon_text(checked)
 
-        for attr in self.action_dict:
-            ico, txt, slot, keys, tip = self.action_dict[attr]
-            action = self.actions[attr]
+    def set_toolbar_icon_text(self, show_toolbar_text):
+        for action in self.actions_for_toolbar:
+            attr, act, ico, txt = [a for a in self.icon_text_actions if a[1] == action][0]
+            print(attr, act, ico, txt)
+            widget = self.toolbar.widgetForAction(act)
 
-            if ico and not checked:
-                action.setText("")
-                action.setIcon(ico)
+            if show_toolbar_text or not ico:
+                widget.setIcon(QIcon())
             else:
-                action.setIcon(QIcon())
-                action.setText(txt)
+                widget.setIcon(ico)
 
-            setattr(self, attr, action)
+            setattr(self, attr, act)
 
     def get_preferences(self):
         file = 'main_preferences'
