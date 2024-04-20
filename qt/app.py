@@ -134,15 +134,18 @@ class MainWindow(QMainWindow):
         # shortcuts without buttons
         self._create_shortcuts_without_actions()
 
+        # get user preferences
         self.main_preferences = self.get_preferences()
         if self.main_preferences is None:
             self.main_preferences = {'show_toolbar_text': False}
             self.save_preferences()
 
+        # GUI elements to use throughout class
         self.actions_for_toolbar = None
         self.icon_text_actions = []
         self.toolbar = None
 
+        # create actions and apply actions in GUI
         self._create_actions()
         self._create_menubar()
         self._create_main_toolbar()
@@ -251,7 +254,7 @@ class MainWindow(QMainWindow):
             self.filesView.header().sortIndicatorSection(),
             self.filesView.header().sortIndicatorOrder())
         self.filesView.header() \
-                      .sortIndicatorChanged.connect(self.filesViewModel.sort)
+            .sortIndicatorChanged.connect(self.filesViewModel.sort)
 
         self.stackFilesView.setCurrentWidget(self.filesView)
 
@@ -261,7 +264,7 @@ class MainWindow(QMainWindow):
         # context menu for Files View
         self.filesView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.filesView.customContextMenuRequested \
-                      .connect(self.contextMenuClicked)
+            .connect(self.contextMenuClicked)
         self.contextMenu = QMenu(self)
         self.contextMenu.addAction(self.act_restore)
         self.contextMenu.addAction(self.act_restore_to)
@@ -393,7 +396,7 @@ class MainWindow(QMainWindow):
         # populate lists
         self.updateProfiles()
         self.comboProfiles.currentIndexChanged \
-                          .connect(self.comboProfileChanged)
+            .connect(self.comboProfileChanged)
 
         self.filesView.setFocus()
 
@@ -602,6 +605,7 @@ class MainWindow(QMainWindow):
             action = QAction(ico, txt, self) if ico else \
                 QAction(txt, self)
 
+            # Save action to use elsewhere in class
             self.icon_text_actions.append([attr, action, ico, txt])
 
             # Make items checkboxes
@@ -694,7 +698,8 @@ class MainWindow(QMainWindow):
 
         for key, val in menu_dict.items():
             menu = self.menuBar().addMenu(key)
-            menu.addActions(val) if isinstance(val, tuple) else menu.addAction(val)
+            menu.addActions(val) if isinstance(val, tuple) else \
+                menu.addAction(val)
             menu.setToolTipsVisible(True)
 
         # The action of the restore menu. It is used by the menuBar and by the
@@ -993,8 +998,8 @@ class MainWindow(QMainWindow):
 
             if not self.act_stop_take_snapshot.isVisible():
                 for action in (self.act_pause_take_snapshot,
-                            self.act_resume_take_snapshot,
-                            self.act_stop_take_snapshot):
+                               self.act_resume_take_snapshot,
+                               self.act_stop_take_snapshot):
                     action.setEnabled(True)
             self.act_take_snapshot.setVisible(False)
             self.act_pause_take_snapshot.setVisible(not paused)
@@ -1182,6 +1187,7 @@ class MainWindow(QMainWindow):
         self.act_remove_snapshot.setEnabled(enabled)
         self.act_snapshot_logview.setEnabled(enabled)
 
+        # setEnabled returns icon, which is not ideal if buttons should only show text
         self.set_toolbar_icon_text()
 
     def timeLineChanged(self):
@@ -1386,17 +1392,17 @@ class MainWindow(QMainWindow):
         cb = QCheckBox(_(
             'Create backup copies with trailing {suffix}\n'
             'before overwriting or removing local elements.').format(
-                suffix=self.snapshots.backupSuffix()))
+            suffix=self.snapshots.backupSuffix()))
 
         cb.setChecked(self.config.backupOnRestore())
         cb.setToolTip(_(
             "Newer versions of files will be renamed with trailing "
             "{suffix} before restoring.\n"
             "If you don't need them anymore you can remove them with {cmd}")
-            .format(suffix=self.snapshots.backupSuffix(),
-                    cmd='find ./ -name "*{suffix}" -delete'
-                        .format(suffix=self.snapshots.backupSuffix()))
-        )
+                      .format(suffix=self.snapshots.backupSuffix(),
+                              cmd='find ./ -name "*{suffix}" -delete'
+                              .format(suffix=self.snapshots.backupSuffix()))
+                      )
         return {
             'widget': cb,
             'retFunc': cb.isChecked,
@@ -1677,8 +1683,8 @@ files that the receiver requests to be transferred.""")
         # The class "GenericNonSnapshot" indicates that "Now" is selected
         # in the snapshots timeline widget.
         if (os.path.exists(full_path)
-            and (isinstance(self.sid, snapshots.GenericNonSnapshot)  # "Now"
-                 or self.sid.isExistingPathInsideSnapshotFolder(rel_path))):
+                and (isinstance(self.sid, snapshots.GenericNonSnapshot)  # "Now"
+                     or self.sid.isExistingPathInsideSnapshotFolder(rel_path))):
 
             if os.path.isdir(full_path):
                 self.path = rel_path
@@ -1926,6 +1932,7 @@ files that the receiver requests to be transferred.""")
         self.set_toolbar_icon_text()
 
     def set_toolbar_icon_text(self):
+        """Based on user preference, this sets the toolbar buttons to display either text or icons."""
         for action in self.actions_for_toolbar:
             attr, act, ico, txt = [a for a in self.icon_text_actions if a[1] == action][0]
             widget = self.toolbar.widgetForAction(act)
@@ -1938,6 +1945,7 @@ files that the receiver requests to be transferred.""")
             setattr(self, attr, act)
 
     def get_preferences(self):
+        """Returns a dictionary of the main user-preferences from a json-formatted text file."""
         file = 'main_preferences'
         if not os.path.exists(file) or os.path.getsize(file) == 0:
             return
@@ -1946,6 +1954,7 @@ files that the receiver requests to be transferred.""")
             return json.load(file)
 
     def save_preferences(self):
+        """Writes user-preferences to a text file."""
         with open('main_preferences', 'w') as file:
             json.dump(self.main_preferences, file, indent=4)
 
