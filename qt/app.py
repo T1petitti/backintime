@@ -295,6 +295,16 @@ class MainWindow(QMainWindow):
         self.statusBar().addWidget(layoutWidget, 100)
         self.status.setText(_('Done'))
 
+        self.free_diskspace = QLabel(self)
+
+        # Add the "Blah" label
+        self.statusBar().addWidget(self.free_diskspace)
+        self.snap = snapshots.Snapshots()
+        self.snapshot_path = config.snapshotsFullPath()
+        self.free_space = self.snap.statFreeSpaceLocal(self.snapshot_path)
+        self.free_diskspace.setText(f'Free Disk Space (mb): {self.free_space}')
+
+
         self.snapshotsList = []
         self.sid = snapshots.RootSnapshot(self.config)
         self.path = self.config.profileStrValue(
@@ -1039,6 +1049,8 @@ class MainWindow(QMainWindow):
         else:
             self.progressBar.setVisible(False)
             self.progressBarDummy.setVisible(True)
+        self.free_space = self.snap.statFreeSpaceLocal(self.config.snapshotsFullPath())
+        self.free_diskspace.setText(f'Free Disk Space (mb): {self.free_space}')
 
         #if not fake_busy:
         #	self.lastTakeSnapshotMessage = None
