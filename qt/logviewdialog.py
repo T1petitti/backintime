@@ -132,6 +132,11 @@ class LogViewDialog(QDialog):
         self.mainLayout.addWidget(buttonBox)
         buttonBox.rejected.connect(self.close)
 
+        infoButton = QPushButton("Show Rsync Info")
+        self.mainLayout.addWidget(infoButton)
+
+
+
         self.updateSnapshots()
         self.updateDecode()
         self.updateProfiles()
