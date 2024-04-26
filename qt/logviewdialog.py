@@ -111,6 +111,7 @@ class LogViewDialog(QDialog):
         self.comboFilter.addItem(_('Changes'), snapshotlog.LogFilter.CHANGES)
         self.comboFilter.addItem(_('Information'), snapshotlog.LogFilter.INFORMATION)
         self.comboFilter.addItem(_('rsync transfer failures (experimental)'), snapshotlog.LogFilter.RSYNC_TRANSFER_FAILURES)
+        self.comboFilter.addItem(_('Rsync Help'))
 
         # text view
         self.txtLogView = QPlainTextEdit(self)
@@ -120,7 +121,7 @@ class LogViewDialog(QDialog):
         self.mainLayout.addWidget(self.txtLogView)
 
         #
-        self.mainLayout.addWidget(QLabel(_('[E] Error, [I] Information, [C] Change')))
+        self.mainLayout.addWidget(QLabel(_('[E] Error, [I] Information, [C] Change, [R] Rsync Help')))
 
         #decode path
         self.cbDecode = QCheckBox(_('decode paths'), self)
@@ -132,9 +133,9 @@ class LogViewDialog(QDialog):
         self.mainLayout.addWidget(buttonBox)
         buttonBox.rejected.connect(self.close)
 
-        infoButton = QPushButton("Show Rsync Info")
-        self.mainLayout.addWidget(infoButton)
-
+        #infoButton = QPushButton("Show Rsync Info")
+        #self.mainLayout.addWidget(infoButton)
+        # buttonBox.clicked(self.displayRsyncInfo())
 
 
         self.updateSnapshots()
@@ -151,6 +152,14 @@ class LogViewDialog(QDialog):
 
         self.txtLogView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.txtLogView.customContextMenuRequested.connect(self.contextMenuClicked)
+
+
+
+    def displayRsyncInfo(self):
+        textWindow = QMessageBox()
+        textWindow.setWindowTitle("Rsync Info")
+        textWindow.setText("sample text")
+        textWindow.exec()
 
     def cbDecodeChanged(self):
         if self.cbDecode.isChecked():
