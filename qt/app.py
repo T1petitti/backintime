@@ -1207,7 +1207,6 @@ class MainWindow(QMainWindow):
             self.timeLine.checkSelection()
 
     def btnTakeSnapshotClicked(self):
-        #self.shutdown.set_interface_method(self.shutdown.MethodState.SUSPEND)
         backintime.takeSnapshotAsync(self.config)
         self.updateTakeSnapshot(True)
 
