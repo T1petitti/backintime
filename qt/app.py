@@ -596,6 +596,9 @@ class MainWindow(QMainWindow):
         }
 
         for attr in action_dict:
+            if attr == 'act_suspend' and not self.shutdown.canSuspend():
+                continue  # Don't let user suspend if their desktop environment can't
+
             ico, txt, slot, keys, tip = action_dict[attr]
 
             # Create action (with icon)
@@ -621,9 +624,10 @@ class MainWindow(QMainWindow):
         self.act_shutdown.toggled.connect(self.btnShutdownToggled)
         self.act_shutdown.setCheckable(True)
         self.act_shutdown.setEnabled(self.shutdown.canShutdown())
-        self.act_suspend.toggled.connect(self.btnSuspendToggled)
-        self.act_suspend.setCheckable(True)
-        self.act_suspend.setEnabled(self.shutdown.canShutdown())
+        if self.shutdown.canSuspend():
+            self.act_suspend.toggled.connect(self.btnSuspendToggled)
+            self.act_suspend.setCheckable(True)
+            self.act_suspend.setEnabled(self.shutdown.canShutdown())
         self.act_pause_take_snapshot.setVisible(False)
         self.act_resume_take_snapshot.setVisible(False)
         self.act_stop_take_snapshot.setVisible(False)
@@ -653,7 +657,7 @@ class MainWindow(QMainWindow):
             'Back In &Time': (
                 self.act_setup_language,
                 self.act_shutdown,
-                self.act_suspend,
+                self.act_suspend if hasattr(self, 'act_suspend') else None,
                 self.act_quit,
             ),
             _('&Backup'): (
@@ -685,6 +689,8 @@ class MainWindow(QMainWindow):
                 self.act_help_about,
             )
         }
+        # Filter out 'None' from 'Back In &Time'
+        menu_dict['Back In &Time'] = tuple(a for a in menu_dict['Back In &Time'] if a is not None)
 
         for key in menu_dict:
             menu = self.menuBar().addMenu(key)
@@ -732,8 +738,9 @@ class MainWindow(QMainWindow):
             self.act_last_logview,
             self.act_settings,
             self.act_shutdown,
-            self.act_suspend,
         ]
+        if self.shutdown.canSuspend():
+            actions_for_toolbar.append(self.act_suspend)
 
         # Add each action to toolbar
         for act in actions_for_toolbar:
@@ -768,7 +775,8 @@ class MainWindow(QMainWindow):
         # separators and stretchers
         toolbar.insertSeparator(self.act_settings)
         toolbar.insertSeparator(self.act_shutdown)
-        toolbar.insertSeparator(self.act_suspend)
+        if self.shutdown.canSuspend():
+            toolbar.insertSeparator(self.act_suspend)
 
     def _create_and_get_filesview_toolbar(self):
         """Create the filesview toolbar object, connect it to actions and
@@ -1312,7 +1320,8 @@ class MainWindow(QMainWindow):
 
     def btnShutdownToggled(self, checked):
         self.shutdown.activate_shutdown = checked
-        self.act_suspend.setEnabled(not checked)
+        if self.shutdown.canSuspend():
+            self.act_suspend.setEnabled(not checked)
 
     def btnSuspendToggled(self, checked):
         self.shutdown.activate_suspend = checked

@@ -2178,6 +2178,7 @@ class ShutDown(object):
         self.activate_shutdown = False
         self.activate_suspend = False
         self.started = False
+        self.can_suspend = None
 
     def _prepair(self,method_num):
         """
@@ -2204,6 +2205,7 @@ class ShutDown(object):
                 else:
                     bus = systembus
                 interface = bus.get_object(dbus_props['service'], dbus_props['objectPath'])
+                self.can_suspend = len(dbus_props['method']) > 1
                 proxy = interface.get_dbus_method(dbus_props['method'][method_num], dbus_props['interface'])
                 return((proxy, dbus_props['arguments']))
             except dbus.exceptions.DBusException:
@@ -2215,6 +2217,12 @@ class ShutDown(object):
         Indicate if a valid dbus service is available to shutdown system.
         """
         return(not self.proxy is None or self.is_root)
+
+    def canSuspend(self):
+        """
+        Indicate if user's desktop environment support suspend.
+        """
+        return self.canShutdown() and self.can_suspend
 
     def askBeforeQuit(self):
         """
