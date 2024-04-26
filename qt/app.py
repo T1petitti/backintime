@@ -653,6 +653,7 @@ class MainWindow(QMainWindow):
             'Back In &Time': (
                 self.act_setup_language,
                 self.act_shutdown,
+                self.act_suspend,
                 self.act_quit,
             ),
             _('&Backup'): (
