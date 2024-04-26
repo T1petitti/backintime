@@ -526,7 +526,7 @@ class MainWindow(QMainWindow):
             'act_suspend': (
                 icon.SUSPEND, _('Suspend'),
                 None, None,
-                _('Put the system into sleep mode')
+                _('Suspend system after snapshot has finished.')
             ),
             'act_setup_language': (
                 None, _('Setup language…'),
