@@ -2206,10 +2206,8 @@ class ShutDown(object):
                 else:
                     bus = systembus
                 interface = bus.get_object(dbus_props['service'], dbus_props['objectPath'])
-                self.can_suspend = de == 'gnome' or len(dbus_props['method']) > 1
-                method_str = dbus_props['method'][0] if method_num == 1 and de == 'gnome' else \
-                    dbus_props['method'][method_num]
-                proxy = interface.get_dbus_method(method_str, dbus_props['interface'])
+                self.can_suspend = len(dbus_props['method']) > 1
+                proxy = interface.get_dbus_method(dbus_props['method'][method_num], dbus_props['interface'])
                 return((proxy, dbus_props['arguments']))
             except dbus.exceptions.DBusException:
                 continue
