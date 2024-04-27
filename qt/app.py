@@ -145,7 +145,6 @@ class MainWindow(QMainWindow):
         self.icon_text_actions = []
         self.toolbar = None
 
-        # create actions and apply actions in GUI
         self._create_actions()
         self._create_menubar()
         self._create_main_toolbar()
