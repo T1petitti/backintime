@@ -111,7 +111,8 @@ class LogViewDialog(QDialog):
         self.comboFilter.addItem(_('Changes'), snapshotlog.LogFilter.CHANGES)
         self.comboFilter.addItem(_('Information'), snapshotlog.LogFilter.INFORMATION)
         self.comboFilter.addItem(_('rsync transfer failures (experimental)'), snapshotlog.LogFilter.RSYNC_TRANSFER_FAILURES)
-        self.comboFilter.addItem(_('Rsync Help'))
+        self.comboFilter.addItem(_('Rsync Help'), snapshotlog.LogFilter.RSYNC_HELP)
+
 
         # text view
         self.txtLogView = QPlainTextEdit(self)
@@ -133,14 +134,14 @@ class LogViewDialog(QDialog):
         self.mainLayout.addWidget(buttonBox)
         buttonBox.rejected.connect(self.close)
 
-        #infoButton = QPushButton("Show Rsync Info")
-        #self.mainLayout.addWidget(infoButton)
-        # buttonBox.clicked(self.displayRsyncInfo())
+
 
 
         self.updateSnapshots()
         self.updateDecode()
         self.updateProfiles()
+
+
 
         # watch for changes in log file
         self.watcher = QFileSystemWatcher(self)
@@ -156,10 +157,12 @@ class LogViewDialog(QDialog):
 
 
     def displayRsyncInfo(self):
-        textWindow = QMessageBox()
-        textWindow.setWindowTitle("Rsync Info")
-        textWindow.setText("sample text")
-        textWindow.exec()
+        if self.comboFilter.currentIndex() == 6:
+            self.txtLogView.setPlainText("test TEST")
+        #textWindow = QMessageBox()
+        #textWindow.setWindowTitle("Rsync Info")
+        #textWindow.setText("sample text")
+        #textWindow.exec()
 
     def cbDecodeChanged(self):
         if self.cbDecode.isChecked():
@@ -260,9 +263,12 @@ class LogViewDialog(QDialog):
             return
 
         mode = self.comboFilter.itemData(self.comboFilter.currentIndex())
+        # self.displayRsyncInfo()
+
 
         # TODO This expressions is hard to understand (watchPath is not a boolean!)
         if watchPath and self.sid is None:
+            self.displayRsyncInfo()
             # remove path from watch to prevent multiple updates at the same time
             self.watcher.removePath(watchPath)
             # append only new lines to txtLogView
@@ -280,8 +286,10 @@ class LogViewDialog(QDialog):
         elif self.sid is None:
             log = snapshotlog.SnapshotLog(self.config, self.comboProfiles.currentProfileID())
             self.txtLogView.setPlainText('\n'.join(log.get(mode = mode, decode = self.decode)))
+            self.displayRsyncInfo()
         else:
             self.txtLogView.setPlainText('\n'.join(self.sid.log(mode, decode = self.decode)))
+            self.displayRsyncInfo()
 
     def closeEvent(self, event):
         self.config.setIntValue('qt.logview.width', self.width())

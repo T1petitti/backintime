@@ -2089,6 +2089,7 @@ class SettingsDialog(QDialog):
         self.encfsWarning.setHidden(
             active_mode not in ('local_encfs', 'ssh_encfs'))
 
+
     def fullPathChanged(self, dummy):
         if self.mode in ('ssh', 'ssh_encfs'):
             path = self.txtSshPath.text()
