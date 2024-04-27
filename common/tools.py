@@ -2140,7 +2140,8 @@ class ShutDown(object):
                     'e17':     {'bus':          'sessionbus',
                                 'service':      'org.enlightenment.Remote.service',
                                 'objectPath':   '/org/enlightenment/Remote/RemoteObject',
-                                'method':       ['Halt'],
+                                'method':       ['Halt',
+                                                 'Suspend'],
                                     #methods    Halt -> Shutdown
                                     #           Reboot
                                     #           Logout
