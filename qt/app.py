@@ -803,10 +803,10 @@ class MainWindow(QMainWindow):
             QToolButton.ToolButtonPopupMode.MenuButtonPopup)
 
         # separators and stretchers
-        toolbar.insertSeparator(self.act_settings)
-        toolbar.insertSeparator(self.act_shutdown)
+        self.toolbar.insertSeparator(self.act_settings)
+        self.toolbar.insertSeparator(self.act_shutdown)
         if self.shutdown.canSuspend():
-            toolbar.insertSeparator(self.act_suspend)
+            self.toolbar.insertSeparator(self.act_suspend)
             
         self.set_toolbar_icon_text()
 
