@@ -50,3 +50,6 @@ common/doc-dev/_build/html
 
 # Linter configuration
 .flake8
+
+# Preferences files
+qt/main_preferences
