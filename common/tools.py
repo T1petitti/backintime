@@ -2169,6 +2169,7 @@ class ShutDown(object):
                    }
 
     def __init__(self):
+        self.can_suspend = False
         self.is_root = isRoot()
         if self.is_root:
             self.proxy, self.args = None, None
@@ -2179,7 +2180,6 @@ class ShutDown(object):
         self.activate_shutdown = False
         self.activate_suspend = False
         self.started = False
-        self.can_suspend = None
 
     def _prepair(self,method_num):
         """
@@ -2206,8 +2206,10 @@ class ShutDown(object):
                 else:
                     bus = systembus
                 interface = bus.get_object(dbus_props['service'], dbus_props['objectPath'])
-                self.can_suspend = len(dbus_props['method']) > 1
-                proxy = interface.get_dbus_method(dbus_props['method'][method_num], dbus_props['interface'])
+                self.can_suspend = de == 'gnome' or len(dbus_props['method']) > 1
+                method_str = dbus_props['method'][0] if method_num == 1 and de == 'gnome' else \
+                    dbus_props['method'][method_num]
+                proxy = interface.get_dbus_method(method_str, dbus_props['interface'])
                 return((proxy, dbus_props['arguments']))
             except dbus.exceptions.DBusException:
                 continue
@@ -2258,7 +2260,7 @@ class ShutDown(object):
         Run 'systemctl suspend' if we are root or
         call the dbus proxy to trigger suspend.
         """
-        if not self.activate_suspend:
+        if not self.activate_suspend or not self.can_suspend:
             return(False)
         if self.is_root:
             syncfs()
