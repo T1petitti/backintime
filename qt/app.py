@@ -695,10 +695,10 @@ class MainWindow(QMainWindow):
             )
         }
 
-        for key, val in menu_dict.items():
+        for key, actions in menu_dict.items():
             menu = self.menuBar().addMenu(key)
-            menu.addActions(val) if isinstance(val, tuple) else \
-                menu.addAction(val)
+            menu.addActions(actions) if isinstance(actions, tuple) else \
+                menu.addAction(actions)
             menu.setToolTipsVisible(True)
 
         # The action of the restore menu. It is used by the menuBar and by the
