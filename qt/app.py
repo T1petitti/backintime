@@ -307,6 +307,16 @@ class MainWindow(QMainWindow):
         self.statusBar().addWidget(layoutWidget, 100)
         self.status.setText(_('Done'))
 
+        self.free_diskspace = QLabel(self)
+
+        # Add the "Blah" label
+        self.statusBar().addWidget(self.free_diskspace)
+        self.snap = snapshots.Snapshots()
+        self.snapshot_path = config.snapshotsFullPath()
+        self.free_space = self.snap.statFreeSpaceLocal(self.snapshot_path)
+        self.free_diskspace.setText(f'Free Disk Space (mb): {self.free_space}')
+
+
         self.snapshotsList = []
         self.sid = snapshots.RootSnapshot(self.config)
         self.path = self.config.profileStrValue(
@@ -525,6 +535,11 @@ class MainWindow(QMainWindow):
                 icon.SHUTDOWN, _('Shutdown'),
                 None, None,
                 _('Shut down system after snapshot has finished.')),
+            'act_suspend': (
+                icon.SUSPEND, _('Suspend'),
+                None, None,
+                _('Suspend system after snapshot has finished.')
+            ),
             'act_setup_language': (
                 None, _('Setup language…'),
                 self.slot_setup_language, None,
@@ -598,6 +613,9 @@ class MainWindow(QMainWindow):
         }
 
         for attr in action_dict:
+            if attr == 'act_suspend' and not self.shutdown.canSuspend():
+                continue  # Don't let user suspend if their desktop environment can't
+
             ico, txt, slot, keys, tip = action_dict[attr]
 
             # Create action (with icon)
@@ -631,6 +649,10 @@ class MainWindow(QMainWindow):
         self.act_shutdown.toggled.connect(self.btnShutdownToggled)
         self.act_shutdown.setCheckable(True)
         self.act_shutdown.setEnabled(self.shutdown.canShutdown())
+        if self.shutdown.canSuspend():
+            self.act_suspend.toggled.connect(self.btnSuspendToggled)
+            self.act_suspend.setCheckable(True)
+            self.act_suspend.setEnabled(self.shutdown.canShutdown())
         self.act_pause_take_snapshot.setVisible(False)
         self.act_resume_take_snapshot.setVisible(False)
         self.act_stop_take_snapshot.setVisible(False)
@@ -660,6 +682,7 @@ class MainWindow(QMainWindow):
             'Back In &Time': (
                 self.act_setup_language,
                 self.act_shutdown,
+                self.act_suspend if hasattr(self, 'act_suspend') else None,
                 self.act_quit,
             ),
             _('&Backup'): (
@@ -694,6 +717,8 @@ class MainWindow(QMainWindow):
                 self.act_help_about,
             )
         }
+        # Filter out 'None' from 'Back In &Time'
+        menu_dict['Back In &Time'] = tuple(a for a in menu_dict['Back In &Time'] if a is not None)
 
         for key, actions in menu_dict.items():
             menu = self.menuBar().addMenu(key)
@@ -743,6 +768,8 @@ class MainWindow(QMainWindow):
             self.act_settings,
             self.act_shutdown,
         ]
+        if self.shutdown.canSuspend():
+            actions_for_toolbar.append(self.act_suspend)
 
         # Add each action to toolbar
         for act in self.actions_for_toolbar:
@@ -776,9 +803,11 @@ class MainWindow(QMainWindow):
             QToolButton.ToolButtonPopupMode.MenuButtonPopup)
 
         # separators and stretchers
-        self.toolbar.insertSeparator(self.act_settings)
-        self.toolbar.insertSeparator(self.act_shutdown)
-
+        toolbar.insertSeparator(self.act_settings)
+        toolbar.insertSeparator(self.act_shutdown)
+        if self.shutdown.canSuspend():
+            toolbar.insertSeparator(self.act_suspend)
+            
         self.set_toolbar_icon_text()
 
     def _create_and_get_filesview_toolbar(self):
@@ -1028,6 +1057,7 @@ class MainWindow(QMainWindow):
                     takeSnapshotMessage = (0, _('Done, no backup needed'))
 
             self.shutdown.shutdown()
+            self.shutdown.suspend()
 
         if takeSnapshotMessage != self.lastTakeSnapshotMessage or force_update:
             self.lastTakeSnapshotMessage = takeSnapshotMessage
@@ -1060,6 +1090,8 @@ class MainWindow(QMainWindow):
         else:
             self.progressBar.setVisible(False)
             self.progressBarDummy.setVisible(True)
+        self.free_space = self.snap.statFreeSpaceLocal(self.config.snapshotsFullPath())
+        self.free_diskspace.setText(f'Free Disk Space (mb): {self.free_space}')
 
         #if not fake_busy:
         #	self.lastTakeSnapshotMessage = None
@@ -1323,6 +1355,12 @@ class MainWindow(QMainWindow):
 
     def btnShutdownToggled(self, checked):
         self.shutdown.activate_shutdown = checked
+        if self.shutdown.canSuspend():
+            self.act_suspend.setEnabled(not checked)
+
+    def btnSuspendToggled(self, checked):
+        self.shutdown.activate_suspend = checked
+        self.act_shutdown.setEnabled(not checked)
 
     def contextMenuClicked(self, point):
         self.contextMenu.exec(self.filesView.mapToGlobal(point))
