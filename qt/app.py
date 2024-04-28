@@ -136,9 +136,7 @@ class MainWindow(QMainWindow):
 
         # get user preferences
         self.main_preferences = self.get_preferences()
-        if self.main_preferences is None:
-            self.main_preferences = {'show_toolbar_text': False}
-            self.save_preferences()
+        self.verify_preferences()
 
         # GUI elements to use throughout class
         self.actions_for_toolbar = None
@@ -1994,6 +1992,15 @@ files that the receiver requests to be transferred.""")
         """Writes user-preferences to a text file."""
         with open('main_preferences', 'w') as file:
             json.dump(self.main_preferences, file, indent=4)
+
+    def verify_preferences(self):
+        """Ensure preferences dictionary is usable and has necessary keys."""
+        if self.main_preferences is None:
+            self.main_preferences = {'show_toolbar_text': False}
+            self.save_preferences()
+        elif 'show_toolbar_text' not in self.main_preferences:
+            self.main_preferences['show_toolbar_text'] = False
+            self.save_preferences()
 
 
 class ExtraMouseButtonEventFilter(QObject):
