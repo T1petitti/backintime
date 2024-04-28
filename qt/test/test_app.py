@@ -4,9 +4,8 @@
 import unittest
 import os
 import sys
-import itertools
-#from test import generic
 import json
+from unittest.mock import patch
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from qt import app
@@ -26,28 +25,29 @@ from common import guiapplicationinstance
 
 class TestSavePreferences(unittest.TestCase):
     def setUp(self):
-        cfg = backintime.startApp('backintime-qt')
+        # Mock exit to prevent it from actually exiting the Python interpreter
+        with patch("builtins.exit") as mock_exit:
+            self.cfg = backintime.startApp('backintime-qt')
 
-        raiseCmd = ''
-        if len(sys.argv) > 1:
-            raiseCmd = '\n'.join(sys.argv[1:])
+            raiseCmd = ''
+            if len(sys.argv) > 1:
+                raiseCmd = '\n'.join(sys.argv[1:])
 
-        appInstance = guiapplicationinstance.GUIApplicationInstance(cfg.appInstanceFile(), raiseCmd)
-        cfg.PLUGIN_MANAGER.load(cfg=cfg)
-        cfg.PLUGIN_MANAGER.appStart()
+            self.appInstance = guiapplicationinstance.GUIApplicationInstance(self.cfg.appInstanceFile(), raiseCmd)
+            self.cfg.PLUGIN_MANAGER.load(cfg=self.cfg)
+            self.cfg.PLUGIN_MANAGER.appStart()
 
-        logger.openlog()
-        qapp = qttools.createQApplication(cfg.APP_NAME)
-        translator = qttools.initiate_translator(cfg.language())
-        qapp.installTranslator(translator)
+            logger.openlog()
+            qapp = qttools.createQApplication(self.cfg.APP_NAME)
+            translator = qttools.initiate_translator(self.cfg.language())
+            qapp.installTranslator(translator)
 
-        self.mainWindow = app.MainWindow(cfg, appInstance, qapp)
+            self.mainWindow = app.MainWindow(self.cfg, self.appInstance, qapp)
 
     def tearDown(self):
-        #cfg.PLUGIN_MANAGER.appExit()
-        #appInstance.exitApplication()
-        #logger.closelog()
-        pass
+        self.cfg.PLUGIN_MANAGER.appExit()
+        self.appInstance.exitApplication()
+        logger.closelog()
 
     def test_save_preferences_writes_file(self):
         self.mainWindow.save_preferences()
