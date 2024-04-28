@@ -24,6 +24,10 @@ from common import guiapplicationinstance
 
 
 class TestSavePreferences(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.preferences_file = 'test_preferences.json'
+
     def setUp(self):
         # Mock exit to prevent it from actually exiting the Python interpreter
         with patch("builtins.exit") as mock_exit:
@@ -50,14 +54,14 @@ class TestSavePreferences(unittest.TestCase):
         logger.closelog()
 
     def test_save_preferences_writes_file(self):
-        self.mainWindow.save_preferences()
-        self.assertTrue(os.path.exists('main_preferences'))
+        self.mainWindow.save_preferences(self.preferences_file)
+        self.assertTrue(os.path.exists(self.preferences_file))
 
     def test_save_preferences_writes_correct_data(self):
         test_preferences = {'key1': 'value1', 'key2': 'value2'}
         self.mainWindow.main_preferences = test_preferences
-        self.mainWindow.save_preferences()
-        with open('main_preferences', 'r') as file:
+        self.mainWindow.save_preferences(self.preferences_file)
+        with open(self.preferences_file, 'r') as file:
             saved_preferences = json.load(file)
         self.assertEqual(saved_preferences, test_preferences)
 

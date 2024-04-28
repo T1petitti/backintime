@@ -1986,8 +1986,8 @@ files that the receiver requests to be transferred.""")
                 prefs = json.load(file)
         except FileNotFoundError:
             pass
-        except json.JSONDecodeError:  # Ignore empty file
-            pass
+        except json.JSONDecodeError:
+            pass  # Ignore empty file
         return self.verify_preferences(prefs)
 
     def verify_preferences(self, prefs):
