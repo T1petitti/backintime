@@ -52,4 +52,4 @@ common/doc-dev/_build/html
 .flake8
 
 # Preferences files
-qt/main_preferences
+qt/main_preferences*

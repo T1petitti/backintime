@@ -136,7 +136,6 @@ class MainWindow(QMainWindow):
 
         # get user preferences
         self.main_preferences = self.get_preferences()
-        self.verify_preferences()
 
         # GUI elements to use throughout class
         self.actions_for_toolbar = None
@@ -1979,28 +1978,32 @@ files that the receiver requests to be transferred.""")
 
             setattr(self, attr, act)
 
-    def get_preferences(self):
-        """Returns a dictionary of the main user-preferences from a json-formatted text file."""
-        file = 'main_preferences'
-        if not os.path.exists(file) or os.path.getsize(file) == 0:
-            return
+    def get_preferences(self, file_name='main_preferences.json'):
+        """Returns a dictionary of the main user-preferences from a json file."""
+        prefs = None
+        try:
+            with open(file_name, 'r') as file:
+                prefs = json.load(file)
+        except FileNotFoundError:
+            pass
+        except json.JSONDecodeError:  # Ignore empty file
+            pass
+        return self.verify_preferences(prefs)
 
-        with open('main_preferences', 'r') as file:
-            return json.load(file)
-
-    def save_preferences(self):
-        """Writes user-preferences to a text file."""
-        with open('main_preferences', 'w') as file:
-            json.dump(self.main_preferences, file, indent=4)
-
-    def verify_preferences(self):
+    def verify_preferences(self, prefs):
         """Ensure preferences dictionary is usable and has necessary keys."""
-        if self.main_preferences is None:
-            self.main_preferences = {'show_toolbar_text': False}
-            self.save_preferences()
-        elif 'show_toolbar_text' not in self.main_preferences:
-            self.main_preferences['show_toolbar_text'] = False
-            self.save_preferences()
+        default_prefs = {'show_toolbar_text': False}
+        if prefs is None:
+            prefs = default_prefs
+        else:  # Ensure every key is in prefs
+            for key, val in default_prefs.items():
+                prefs.setdefault(key, val)
+        return prefs
+
+    def save_preferences(self, file_name='main_preferences.json'):
+        """Writes user-preferences to a json file."""
+        with open(file_name, 'w') as file:
+            json.dump(self.main_preferences, file, indent=4)
 
 
 class ExtraMouseButtonEventFilter(QObject):
