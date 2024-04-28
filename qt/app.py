@@ -1988,13 +1988,15 @@ files that the receiver requests to be transferred.""")
             pass
         except json.JSONDecodeError:
             pass  # Ignore empty file
-        return self.verify_preferences(prefs)
+        return self._verify_preferences(prefs)
 
-    def verify_preferences(self, prefs):
+    def _verify_preferences(self, prefs):
         """Ensure preferences dictionary is usable and has necessary keys."""
         default_prefs = {'show_toolbar_text': False}
-        if prefs is None:
+        if prefs is None or not prefs:
             prefs = default_prefs
+        elif not isinstance(prefs, dict):
+            raise TypeError("'prefs' must be a dictionary")
         else:  # Ensure every key is in prefs
             for key, val in default_prefs.items():
                 prefs.setdefault(key, val)
