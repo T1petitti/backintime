@@ -19,7 +19,7 @@ import os
 import sys
 import unittest
 import re
-from test import generic
+from common.test import generic
 from tempfile import TemporaryDirectory
 from datetime import datetime
 
