@@ -1976,8 +1976,6 @@ files that the receiver requests to be transferred.""")
             else:
                 widget.setIcon(ico)
 
-            setattr(self, attr, act)
-
     def get_preferences(self, file_name='main_preferences.json'):
         """Returns a dictionary of the main user-preferences from a json file."""
         prefs = None
