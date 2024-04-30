@@ -24,13 +24,11 @@ from common import guiapplicationinstance
 
 
 class TestMainWindow(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.test_prefs_file_name = 'test_prefs.json'
-        cls.test_prefs = {'key1': 'value1', 'key2': 'value2'}
-        cls.default_prefs = {'show_toolbar_text': False}
-
     def setUp(self):
+        self.test_prefs_file_name = 'test_prefs.json'
+        self.test_prefs = {'key1': 'value1', 'key2': 'value2'}
+        self.default_prefs = {'show_toolbar_text': False}
+
         # Mock exit to prevent it from actually exiting the Python interpreter
         with patch("builtins.exit") as mock_exit:
             self.cfg = backintime.startApp('backintime-qt')
