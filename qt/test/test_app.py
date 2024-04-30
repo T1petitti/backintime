@@ -25,6 +25,7 @@ from common import guiapplicationinstance
 
 class TestMainWindow(unittest.TestCase):
     def setUp(self):
+        # Variables for preferences testing
         self.test_prefs_file_name = 'test_prefs.json'
         self.test_prefs = {'key1': 'value1', 'key2': 'value2'}
         self.default_prefs = {'show_toolbar_text': False}
