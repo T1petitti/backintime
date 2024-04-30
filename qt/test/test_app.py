@@ -61,7 +61,7 @@ class TestMainWindow(unittest.TestCase):
 
     def test_get_preferences_when_file_exists_and_no_prefs(self):
         """When file doesn't have preferences."""
-        self.mainWindow.main_preferences = self.test_prefs
+        self.mainWindow.main_preferences = self.test_prefs.copy()
         self.mainWindow.save_preferences(self.test_prefs_file_name)
         prefs = self.mainWindow.get_preferences(self.test_prefs_file_name)
         self.add_default_prefs(self.mainWindow.main_preferences)
@@ -69,7 +69,7 @@ class TestMainWindow(unittest.TestCase):
 
     def test_get_preferences_when_file_exists_and_has_prefs(self):
         """When file has preferences."""
-        self.mainWindow.main_preferences = self.test_prefs
+        self.mainWindow.main_preferences = self.test_prefs.copy()
         self.add_default_prefs(self.mainWindow.main_preferences)
         self.mainWindow.save_preferences(self.test_prefs_file_name)
         prefs = self.mainWindow.get_preferences(self.test_prefs_file_name)
@@ -120,7 +120,7 @@ class TestMainWindow(unittest.TestCase):
 
     def test__verify_preferences_when_has_extra_prefs(self):
         """Ensure preferences remain in data."""
-        prefs = self.default_prefs
+        prefs = self.default_prefs.copy()
         prefs['extra_key'] = 'extra_value'
         verified_prefs = self.mainWindow._verify_preferences(prefs)
         self.assertEqual(verified_prefs, prefs)
@@ -132,7 +132,7 @@ class TestMainWindow(unittest.TestCase):
 
     def test_save_preferences_writes_correct_data(self):
         """Ensure preferences gets saved correctly."""
-        self.mainWindow.main_preferences = self.test_prefs
+        self.mainWindow.main_preferences = self.test_prefs.copy()
         self.mainWindow.save_preferences(self.test_prefs_file_name)
         with open(self.test_prefs_file_name, 'r') as file:
             saved_prefs = json.load(file)
