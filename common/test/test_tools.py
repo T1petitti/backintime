@@ -1062,3 +1062,28 @@ class Tools_FakeFS(pyfakefs_ut.TestCase):
                 'branch': 'fix/foobar'
             }
         )
+
+
+class TestShutDown(unittest.TestCase):
+    def setUp(self):
+        self.shutdown = ShutDown()
+
+        mock_proxy = MagicMock()
+        self.shutdown.proxy = mock_proxy
+
+    def test_canSuspend_with_proxy(self):
+        self.shutdown.can_suspend = True
+        self.assertTrue(self.shutdown.canSuspend())
+
+    def test_canSuspend_without_proxy(self):
+        self.shutdown.proxy = None
+        self.shutdown.can_suspend = True
+        self.assertFalse(self.shutdown.canSuspend())
+
+    def test_canSuspend_when_can_suspend_is_true(self):
+        self.shutdown.can_suspend = True
+        self.assertTrue(self.shutdown.canSuspend())
+
+    def test_canSuspend_when_can_suspend_is_false(self):
+        self.shutdown.can_suspend = False
+        self.assertFalse(self.shutdown.canSuspend())
