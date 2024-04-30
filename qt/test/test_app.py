@@ -1,5 +1,6 @@
 # TODO: add copyright text
 
+import time
 import unittest
 import os
 import sys
@@ -43,16 +44,23 @@ class TestMainWindow(unittest.TestCase):
             self.cfg.PLUGIN_MANAGER.appStart()
 
             logger.openlog()
-            qapp = qttools.createQApplication(self.cfg.APP_NAME)
+            self.qapp = qttools.createQApplication(self.cfg.APP_NAME)
             translator = qttools.initiate_translator(self.cfg.language())
-            qapp.installTranslator(translator)
+            self.qapp.installTranslator(translator)
 
-            self.mainWindow = app.MainWindow(self.cfg, self.appInstance, qapp)
+            self.mainWindow = app.MainWindow(self.cfg, self.appInstance, self.qapp)
 
     def tearDown(self):
         self.cfg.PLUGIN_MANAGER.appExit()
         self.appInstance.exitApplication()
         logger.closelog()
+
+        self.qapp.quit()
+
+        # Allow time for the application to finish processing events
+        for _ in range(100):
+            self.qapp.processEvents()
+            time.sleep(0.001)
 
     def add_default_prefs(self, list_to_append):
         """Add default preferences to list."""
