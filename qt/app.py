@@ -766,7 +766,7 @@ class MainWindow(QMainWindow):
             self.act_shutdown,
         ]
         if self.shutdown.canSuspend():
-            actions_for_toolbar.append(self.act_suspend)
+            self.actions_for_toolbar.append(self.act_suspend)
 
         # Add each action to toolbar
         for act in self.actions_for_toolbar:
