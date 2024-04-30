@@ -25,7 +25,7 @@ import gzip
 import stat
 import signal
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import uuid
 from copy import deepcopy
 from tempfile import NamedTemporaryFile, TemporaryDirectory
@@ -35,9 +35,10 @@ from time import sleep
 import pyfakefs.fake_filesystem_unittest as pyfakefs_ut
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import tools
-import config
-import configfile
+from common import tools
+from common.tools import ShutDown
+from common import config
+from common import configfile
 
 # chroot jails used for building may have no UUID devices (because of tmpfs)
 # we need to skip tests that require UUIDs
