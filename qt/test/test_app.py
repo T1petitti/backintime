@@ -8,19 +8,19 @@ import json
 from unittest.mock import patch, MagicMock
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from qt import app
+import app
 
-from qt import qttools_path
+import qttools_path
 qttools_path.registerBackintimePath('common')
 
 # Workaround until the codebase is rectified/equalized.
-from common import tools
+import tools
 tools.initiate_translation(None)
 
-from common import logger
-from qt import qttools
-from common import backintime
-from common import guiapplicationinstance
+import logger
+import qttools
+import backintime
+import guiapplicationinstance
 
 
 class TestMainWindow(unittest.TestCase):
