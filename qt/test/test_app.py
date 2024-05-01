@@ -5,7 +5,7 @@ import unittest
 import os
 import sys
 import json
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from qt import app
@@ -48,6 +48,9 @@ class TestMainWindow(unittest.TestCase):
             self.qapp.installTranslator(translator)
 
             self.mainWindow = app.MainWindow(self.cfg, self.appInstance, self.qapp)
+
+            if not hasattr(self, 'act_suspend'):
+                self.mainWindow.act_suspend = MagicMock()
 
     def tearDown(self):
         self.cfg.PLUGIN_MANAGER.appExit()
@@ -144,6 +147,94 @@ class TestMainWindow(unittest.TestCase):
         with open(self.test_prefs_file_name, 'r') as file:
             saved_prefs = json.load(file)
         self.assertEqual(saved_prefs, self.test_prefs)
+
+    def test_btnShutdownToggled_activated(self):
+        # While suspend button is NOT clicked and computer is able to suspend
+        self.mainWindow.shutdown.activate_shutdown = False
+        self.mainWindow.shutdown.activate_suspend = False
+        self.mainWindow.shutdown.can_suspend = True
+        self.mainWindow.btnShutdownToggled(True)
+        self.assertTrue(self.mainWindow.shutdown.activate_shutdown)
+        self.assertFalse(self.mainWindow.shutdown.activate_suspend)
+
+        # While suspend button is clicked and computer is able to suspend
+        self.mainWindow.shutdown.activate_suspend = True
+        self.mainWindow.btnShutdownToggled(True)
+        self.assertTrue(self.mainWindow.shutdown.activate_shutdown)
+        self.assertFalse(self.mainWindow.shutdown.activate_suspend)
+
+        # While suspend button is NOT clicked and computer is NOT able to suspend
+        self.mainWindow.shutdown.activate_suspend = False
+        self.mainWindow.shutdown.can_suspend = False
+        self.mainWindow.btnShutdownToggled(True)
+        self.assertTrue(self.mainWindow.shutdown.activate_shutdown)
+        self.assertFalse(self.mainWindow.shutdown.activate_suspend)
+
+    def test_btnShutdownToggled_deactivated(self):
+        # While suspend button is NOT clicked and computer is able to suspend
+        self.mainWindow.shutdown.activate_shutdown = False
+        self.mainWindow.shutdown.activate_suspend = False
+        self.mainWindow.shutdown.can_suspend = True
+        self.mainWindow.btnShutdownToggled(False)
+        self.assertFalse(self.mainWindow.shutdown.activate_shutdown)
+        self.assertFalse(self.mainWindow.shutdown.activate_suspend)
+
+        # While suspend button is clicked and computer is able to suspend
+        self.mainWindow.shutdown.activate_suspend = True
+        self.mainWindow.btnShutdownToggled(False)
+        self.assertFalse(self.mainWindow.shutdown.activate_shutdown)
+        self.assertFalse(self.mainWindow.shutdown.activate_suspend)
+
+        # While suspend button is NOT clicked and computer is NOT able to suspend
+        self.mainWindow.shutdown.activate_suspend = False
+        self.mainWindow.shutdown.can_suspend = False
+        self.mainWindow.btnShutdownToggled(False)
+        self.assertFalse(self.mainWindow.shutdown.activate_shutdown)
+        self.assertFalse(self.mainWindow.shutdown.activate_suspend)
+
+    def test_btnSuspendToggled_activated(self):
+        # While shutdown button is NOT clicked and computer is able to suspend
+        self.mainWindow.shutdown.activate_suspend = True
+        self.mainWindow.shutdown.activate_shutdown = False
+        self.mainWindow.shutdown.can_suspend = True
+        self.mainWindow.btnSuspendToggled(True)
+        self.assertTrue(self.mainWindow.shutdown.activate_suspend)
+        self.assertFalse(self.mainWindow.shutdown.activate_shutdown)
+
+        # While shutdown button is clicked and computer is able to suspend
+        self.mainWindow.shutdown.activate_shutdown = True
+        self.mainWindow.btnSuspendToggled(True)
+        self.assertTrue(self.mainWindow.shutdown.activate_suspend)
+        self.assertFalse(self.mainWindow.shutdown.activate_shutdown)
+
+        # While shutdown button is NOT clicked and computer is NOT able to suspend
+        self.mainWindow.shutdown.activate_shutdown = False
+        self.mainWindow.shutdown.can_suspend = False
+        self.mainWindow.btnSuspendToggled(True)
+        self.assertTrue(self.mainWindow.shutdown.activate_suspend)
+        self.assertFalse(self.mainWindow.shutdown.activate_shutdown)
+
+    def test_btnSuspendToggled_deactivated(self):
+        # While shutdown button is NOT clicked and computer is able to suspend
+        self.mainWindow.shutdown.activate_suspend = True
+        self.mainWindow.shutdown.activate_shutdown = False
+        self.mainWindow.shutdown.can_suspend = True
+        self.mainWindow.btnSuspendToggled(False)
+        self.assertFalse(self.mainWindow.shutdown.activate_suspend)
+        self.assertFalse(self.mainWindow.shutdown.activate_shutdown)
+
+        # While shutdown button is clicked and computer is able to suspend
+        self.mainWindow.shutdown.activate_shutdown = True
+        self.mainWindow.btnSuspendToggled(False)
+        self.assertFalse(self.mainWindow.shutdown.activate_suspend)
+        self.assertFalse(self.mainWindow.shutdown.activate_shutdown)
+
+        # While shutdown button is NOT clicked and computer is NOT able to suspend
+        self.mainWindow.shutdown.activate_shutdown = False
+        self.mainWindow.shutdown.can_suspend = False
+        self.mainWindow.btnSuspendToggled(False)
+        self.assertFalse(self.mainWindow.shutdown.activate_suspend)
+        self.assertFalse(self.mainWindow.shutdown.activate_shutdown)
 
 
 if __name__ == '__main__':
