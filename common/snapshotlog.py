@@ -23,6 +23,7 @@ import snapshots
 import tools
 
 
+
 class LogFilter(object):
     """
     A Filter for snapshot logs which will both decode log lines and filter them
@@ -46,6 +47,7 @@ class LogFilter(object):
     INFORMATION =       3
     ERROR_AND_CHANGES = 4
     RSYNC_TRANSFER_FAILURES = 5
+    RSYNC_HELP = 6
 
     # Regular expressions used for filtering log file lines.
     # RegExp syntax see: https://docs.python.org/3.10/library/re.html#regular-expression-syntax
@@ -103,7 +105,8 @@ class LogFilter(object):
                                                             # https://github.com/WayneD/rsync/blob/2f9b963abaa52e44891180fe6c0d1c2219f6686d/xattrs.c#L215
                  # r').*'  # no need to match the remainder of the line
                  r')'
-             )}
+             ),
+             RSYNC_HELP: None}
 
     def __init__(self, mode = 0, decode = None):
         self.regex = self.REGEX[mode]
