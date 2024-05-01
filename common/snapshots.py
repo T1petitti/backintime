@@ -86,6 +86,7 @@ class Snapshots:
         self.lastBusyCheck = datetime.datetime(1, 1, 1)
         self.flock = None
         self.restorePermissionFailed = False
+        self.free_space = self.statFreeSpaceLocal(self.config.snapshotsFullPath())
 
     # TODO: make own class for takeSnapshotMessage
     def clearTakeSnapshotMessage(self):
@@ -1887,16 +1888,16 @@ class Snapshots:
                 if len(snapshots) <= 1:
                     break
 
-                free_space = self.statFreeSpaceLocal(self.config.snapshotsFullPath())
+                self.free_space = self.statFreeSpaceLocal(self.config.snapshotsFullPath())
 
-                if free_space is None:
-                    free_space = self.statFreeSpaceSsh()
+                if self.free_space is None:
+                    self.free_space = self.statFreeSpaceSsh()
 
-                if free_space is None:
+                if self.free_space is None:
                     logger.warning('Failed to get free space. Skipping', self)
                     break
 
-                if free_space >= minFreeSpace:
+                if self.free_space >= minFreeSpace:
                     break
 
                 if self.config.dontRemoveNamedSnapshots():
@@ -1905,7 +1906,7 @@ class Snapshots:
                         continue
 
                 msg = "free disk space: {} MiB. Remove snapshot {}"
-                logger.debug(msg.format(free_space, snapshots[0].withoutTag), self)
+                logger.debug(msg.format(self.free_space, snapshots[0].withoutTag), self)
                 self.remove(snapshots[0])
                 del snapshots[0]
 

@@ -31,10 +31,12 @@ from tempfile import TemporaryDirectory
 
 # We need to import common/tools.py
 import qttools_path
+
 qttools_path.registerBackintimePath('common')
 
 # Workaround until the codebase is rectified/equalized.
 import tools
+
 tools.initiate_translation(None)
 
 import qttools
@@ -241,7 +243,7 @@ class MainWindow(QMainWindow):
             self.filesView.header().sortIndicatorSection(),
             self.filesView.header().sortIndicatorOrder())
         self.filesView.header() \
-                      .sortIndicatorChanged.connect(self.filesViewModel.sort)
+            .sortIndicatorChanged.connect(self.filesViewModel.sort)
 
         self.stackFilesView.setCurrentWidget(self.filesView)
 
@@ -251,7 +253,7 @@ class MainWindow(QMainWindow):
         # context menu for Files View
         self.filesView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.filesView.customContextMenuRequested \
-                      .connect(self.contextMenuClicked)
+            .connect(self.contextMenuClicked)
         self.contextMenu = QMenu(self)
         self.contextMenu.addAction(self.act_restore)
         self.contextMenu.addAction(self.act_restore_to)
@@ -297,7 +299,6 @@ class MainWindow(QMainWindow):
 
         self.free_diskspace = QLabel(self)
 
-        # Add the "Blah" label
         self.statusBar().addWidget(self.free_diskspace)
         self.snap = snapshots.Snapshots()
         self.snapshot_path = config.snapshotsFullPath()
@@ -393,7 +394,7 @@ class MainWindow(QMainWindow):
         # populate lists
         self.updateProfiles()
         self.comboProfiles.currentIndexChanged \
-                          .connect(self.comboProfileChanged)
+            .connect(self.comboProfileChanged)
 
         self.filesView.setFocus()
 
@@ -425,7 +426,6 @@ class MainWindow(QMainWindow):
 
             # Do nothing if English is the current used language
             if self.config.language_used != 'en':
-
                 # Show the message only if the current used language is
                 # translated equal or less then 97%
                 self._open_approach_translator_dialog(cutoff=97)
@@ -844,13 +844,14 @@ class MainWindow(QMainWindow):
         self.config.setIntValue('qt.main_window.files_view.date_width', self.filesView.header().sectionSize(2))
 
         self.config.setIntValue('qt.main_window.files_view.sort.column', self.filesView.header().sortIndicatorSection())
-        self.config.setBoolValue('qt.main_window.files_view.sort.ascending', self.filesView.header().sortIndicatorOrder() == Qt.SortOrder.AscendingOrder)
+        self.config.setBoolValue('qt.main_window.files_view.sort.ascending',
+                                 self.filesView.header().sortIndicatorOrder() == Qt.SortOrder.AscendingOrder)
 
         self.filesViewModel.deleteLater()
 
         #umount
         try:
-            mnt = mount.Mount(cfg = self.config, parent = self)
+            mnt = mount.Mount(cfg=self.config, parent=self)
             mnt.umount(self.config.current_hash_id)
         except MountException as ex:
             messagebox.critical(self, str(ex))
@@ -926,7 +927,7 @@ class MainWindow(QMainWindow):
 
     def remount(self, new_profile_id, old_profile_id):
         try:
-            mnt = mount.Mount(cfg = self.config, profile_id = old_profile_id, parent = self)
+            mnt = mount.Mount(cfg=self.config, profile_id=old_profile_id, parent=self)
             hash_id = mnt.remount(new_profile_id)
         except MountException as ex:
             messagebox.critical(self, str(ex))
@@ -938,7 +939,7 @@ class MainWindow(QMainWindow):
         if raiseCmd is None:
             return
 
-        logger.debug("Raise cmd: %s" %raiseCmd, self)
+        logger.debug("Raise cmd: %s" % raiseCmd, self)
         self.qapp.alert(self)
 
     def updateTakeSnapshot(self, force_wait_lock=False):
@@ -985,8 +986,8 @@ class MainWindow(QMainWindow):
 
             if not self.act_stop_take_snapshot.isVisible():
                 for action in (self.act_pause_take_snapshot,
-                            self.act_resume_take_snapshot,
-                            self.act_stop_take_snapshot):
+                               self.act_resume_take_snapshot,
+                               self.act_stop_take_snapshot):
                     action.setEnabled(True)
             self.act_take_snapshot.setVisible(False)
             self.act_pause_take_snapshot.setVisible(not paused)
@@ -1147,7 +1148,7 @@ class MainWindow(QMainWindow):
                 for folder in folders:
                     self.addPlace(folder, folder, 'document-save')
 
-    def sortPlaces(self, newColumn, newOrder, force = False):
+    def sortPlaces(self, newColumn, newOrder, force=False):
         profile_id = self.config.currentProfile()
 
         if newColumn == 0 and newOrder == Qt.SortOrder.AscendingOrder:
@@ -1162,7 +1163,7 @@ class MainWindow(QMainWindow):
 
         self.updatePlaces()
 
-    def updateSnapshotActions(self, item = None):
+    def updateSnapshotActions(self, item=None):
         enabled = False
 
         if item is None:
@@ -1191,7 +1192,7 @@ class MainWindow(QMainWindow):
         self.sid = sid
         self.updateFilesView(2)
 
-    def updateTimeLine(self, refreshSnapshotsList = True):
+    def updateTimeLine(self, refreshSnapshotsList=True):
         self.timeLine.clear()
         self.timeLine.addRoot(snapshots.RootSnapshot(self.config))
         if refreshSnapshotsList:
@@ -1211,7 +1212,7 @@ class MainWindow(QMainWindow):
         self.updateTakeSnapshot(True)
 
     def btnTakeSnapshotChecksumClicked(self):
-        backintime.takeSnapshotAsync(self.config, checksum = True)
+        backintime.takeSnapshotAsync(self.config, checksum=True)
         self.updateTakeSnapshot(True)
 
     def btnStopTakeSnapshotClicked(self):
@@ -1236,7 +1237,7 @@ class MainWindow(QMainWindow):
 
         name = sid.name
 
-        new_name, accept = QInputDialog.getText(self, _('Snapshot Name'), '', text = name)
+        new_name, accept = QInputDialog.getText(self, _('Snapshot Name'), '', text=name)
         if not accept:
             return
 
@@ -1247,11 +1248,11 @@ class MainWindow(QMainWindow):
         sid.name = new_name
         item.updateText()
 
-    def btnLastLogViewClicked (self):
+    def btnLastLogViewClicked(self):
         with self.suspendMouseButtonNavigation():
             logviewdialog.LogViewDialog(self).show()  # no SID argument in constructor means "show last log"
 
-    def btnSnapshotLogViewClicked (self):
+    def btnSnapshotLogViewClicked(self):
         item = self.timeLine.currentItem()
         if item is None:
             return
@@ -1266,7 +1267,7 @@ class MainWindow(QMainWindow):
             if sid != dlg.sid:
                 self.timeLine.setCurrentSnapshotID(dlg.sid)
 
-    def btnRemoveSnapshotClicked (self):
+    def btnRemoveSnapshotClicked(self):
         def hideItem(item):
             try:
                 item.setHidden(True)
@@ -1343,7 +1344,8 @@ class MainWindow(QMainWindow):
                 return '<a href="%(url)s">%(url)s</a>' % {'url': m.group(0)}
 
         def aHref_lp(m):
-            return '<a href="https://bugs.launchpad.net/backintime/+bug/%(id)s">%(txt)s</a>' % {'txt': m.group(0), 'id': m.group(1)}
+            return '<a href="https://bugs.launchpad.net/backintime/+bug/%(id)s">%(txt)s</a>' % {'txt': m.group(0),
+                                                                                                'id': m.group(1)}
 
         changelog_path = pathlib.Path(tools.docPath()) / 'CHANGES'
         msg = changelog_path.read_text('utf-8')
@@ -1371,9 +1373,9 @@ class MainWindow(QMainWindow):
         env = os.environ
         env['MANWIDTH'] = '80'
         proc = subprocess.Popen(['man', man_page],
-                                stdout = subprocess.PIPE,
-                                universal_newlines = True,
-                                env = env)
+                                stdout=subprocess.PIPE,
+                                universal_newlines=True,
+                                env=env)
         out, err = proc.communicate()
         messagebox.showInfo(self, 'Manual Page {}'.format(man_page), out)
 
@@ -1385,17 +1387,17 @@ class MainWindow(QMainWindow):
         cb = QCheckBox(_(
             'Create backup copies with trailing {suffix}\n'
             'before overwriting or removing local elements.').format(
-                suffix=self.snapshots.backupSuffix()))
+            suffix=self.snapshots.backupSuffix()))
 
         cb.setChecked(self.config.backupOnRestore())
         cb.setToolTip(_(
             "Newer versions of files will be renamed with trailing "
             "{suffix} before restoring.\n"
             "If you don't need them anymore you can remove them with {cmd}")
-            .format(suffix=self.snapshots.backupSuffix(),
-                    cmd='find ./ -name "*{suffix}" -delete'
-                        .format(suffix=self.snapshots.backupSuffix()))
-        )
+                      .format(suffix=self.snapshots.backupSuffix(),
+                              cmd='find ./ -name "*{suffix}" -delete'
+                              .format(suffix=self.snapshots.backupSuffix()))
+                      )
         return {
             'widget': cb,
             'retFunc': cb.isChecked,
@@ -1446,7 +1448,7 @@ files that the receiver requests to be transferred.""")
                         'excluded during taking the snapshot.'))
         return {'widget': cb, 'retFunc': cb.isChecked, 'id': 'delete'}
 
-    def confirmRestore(self, paths, restoreTo = None):
+    def confirmRestore(self, paths, restoreTo=None):
         if restoreTo:
             msg = ngettext(
                 # singular
@@ -1472,7 +1474,7 @@ files that the receiver requests to be transferred.""")
                                                        self.deleteOnRestore()))
         return (confirm, opt)
 
-    def confirmDelete(self, warnRoot = False, restoreTo = None):
+    def confirmDelete(self, warnRoot=False, restoreTo=None):
         if restoreTo:
             msg = _('Are you sure you want to remove all newer files '
                     'in {path}?').format(path=restoreTo)
@@ -1493,13 +1495,13 @@ files that the receiver requests to be transferred.""")
         if self.sid.isRoot:
             return
 
-        paths = [f for f, idx in self.multiFileSelected(fullPath = True)]
+        paths = [f for f, idx in self.multiFileSelected(fullPath=True)]
 
         with self.suspendMouseButtonNavigation():
             confirm, opt = self.confirmRestore(paths)
             if not confirm:
                 return
-            if opt['delete'] and not self.confirmDelete(warnRoot = '/' in paths):
+            if opt['delete'] and not self.confirmDelete(warnRoot='/' in paths):
                 return
 
         rd = RestoreDialog(self, self.sid, paths, **opt)
@@ -1509,7 +1511,7 @@ files that the receiver requests to be transferred.""")
         if self.sid.isRoot:
             return
 
-        paths = [f for f, idx in self.multiFileSelected(fullPath = True)]
+        paths = [f for f, idx in self.multiFileSelected(fullPath=True)]
 
         with self.suspendMouseButtonNavigation():
             restoreTo = qttools.getExistingDirectory(self, _('Restore to …'))
@@ -1519,7 +1521,7 @@ files that the receiver requests to be transferred.""")
             confirm, opt = self.confirmRestore(paths, restoreTo)
             if not confirm:
                 return
-            if opt['delete'] and not self.confirmDelete(warnRoot = '/' in paths, restoreTo = restoreTo):
+            if opt['delete'] and not self.confirmDelete(warnRoot='/' in paths, restoreTo=restoreTo):
                 return
 
         rd = RestoreDialog(self, self.sid, paths, restoreTo, **opt)
@@ -1533,7 +1535,7 @@ files that the receiver requests to be transferred.""")
             confirm, opt = self.confirmRestore((self.path,))
             if not confirm:
                 return
-            if opt['delete'] and not self.confirmDelete(warnRoot = self.path == '/'):
+            if opt['delete'] and not self.confirmDelete(warnRoot=self.path == '/'):
                 return
 
         rd = RestoreDialog(self, self.sid, self.path, **opt)
@@ -1551,14 +1553,14 @@ files that the receiver requests to be transferred.""")
             confirm, opt = self.confirmRestore((self.path,), restoreTo)
             if not confirm:
                 return
-            if opt['delete'] and not self.confirmDelete(warnRoot = self.path == '/', restoreTo = restoreTo):
+            if opt['delete'] and not self.confirmDelete(warnRoot=self.path == '/', restoreTo=restoreTo):
                 return
 
         rd = RestoreDialog(self, self.sid, self.path, restoreTo, **opt)
         rd.exec()
 
     def btnSnapshotsClicked(self):
-        path, idx = self.fileSelected(fullPath = True)
+        path, idx = self.fileSelected(fullPath=True)
 
         with self.suspendMouseButtonNavigation():
             dlg = snapshotsdialog.SnapshotsDialog(self, self.sid, path)
@@ -1605,7 +1607,7 @@ files that the receiver requests to be transferred.""")
         self.openPath(path)
 
     def btnAddIncludeClicked(self):
-        paths = [f for f, idx in self.multiFileSelected(fullPath = True)]
+        paths = [f for f, idx in self.multiFileSelected(fullPath=True)]
         include = self.config.include()
         updatePlaces = False
 
@@ -1623,7 +1625,7 @@ files that the receiver requests to be transferred.""")
             self.updatePlaces()
 
     def btnAddExcludeClicked(self):
-        paths = [f for f, idx in self.multiFileSelected(fullPath = True)]
+        paths = [f for f, idx in self.multiFileSelected(fullPath=True)]
         exclude = self.config.exclude()
         exclude.extend(paths)
         self.config.setExclude(exclude)
@@ -1642,7 +1644,7 @@ files that the receiver requests to be transferred.""")
 
         self.openPath(rel_path)
 
-    def tmpCopy(self, full_path, sid = None):
+    def tmpCopy(self, full_path, sid=None):
         """
         Create a temporary local copy of the file ``full_path`` and add the
         temp folder to ``self.tmpDirs`` which will remove them on exit.
@@ -1657,7 +1659,7 @@ files that the receiver requests to be transferred.""")
         if sid:
             sid = '_' + sid.sid
 
-        d = TemporaryDirectory(suffix = sid)
+        d = TemporaryDirectory(suffix=sid)
         tmp_file = os.path.join(d.name, os.path.basename(full_path))
 
         if os.path.isdir(full_path):
@@ -1676,8 +1678,8 @@ files that the receiver requests to be transferred.""")
         # The class "GenericNonSnapshot" indicates that "Now" is selected
         # in the snapshots timeline widget.
         if (os.path.exists(full_path)
-            and (isinstance(self.sid, snapshots.GenericNonSnapshot)  # "Now"
-                 or self.sid.isExistingPathInsideSnapshotFolder(rel_path))):
+                and (isinstance(self.sid, snapshots.GenericNonSnapshot)  # "Now"
+                     or self.sid.isExistingPathInsideSnapshotFolder(rel_path))):
 
             if os.path.isdir(full_path):
                 self.path = rel_path
@@ -1694,7 +1696,8 @@ files that the receiver requests to be transferred.""")
                 self.run = QDesktopServices.openUrl(file_url)
 
     @pyqtSlot(int)
-    def updateFilesView(self, changed_from, selected_file = None, show_snapshots = False): #0 - files view change directory, 1 - files view, 2 - time_line, 3 - places
+    def updateFilesView(self, changed_from, selected_file=None,
+                        show_snapshots=False):  #0 - files view change directory, 1 - files view, 2 - time_line, 3 - places
         if 0 == changed_from or 3 == changed_from:
             selected_file = ''
 
@@ -1801,7 +1804,7 @@ files that the receiver requests to be transferred.""")
         found = False
 
         if self.selected_file:
-            index = self.filesView.indexAt(QPoint(0,0))
+            index = self.filesView.indexAt(QPoint(0, 0))
 
             if not index.isValid():
                 return
@@ -1847,7 +1850,7 @@ files that the receiver requests to be transferred.""")
 
         return (selected_file, idx)
 
-    def multiFileSelected(self, fullPath = False):
+    def multiFileSelected(self, fullPath=False):
         count = 0
         for idx in self.filesView.selectedIndexes():
             if idx.column() > 0:
@@ -1909,7 +1912,6 @@ files that the receiver requests to be transferred.""")
 
         # Apply/OK pressed & the language value modified
         if dlg.result() == 1 and self.config.language() != dlg.language_code:
-
             self.config.setLanguage(dlg.language_code)
 
             messagebox.info(_('The language settings take effect only after '
@@ -1926,13 +1928,14 @@ class ExtraMouseButtonEventFilter(QObject):
     and assign it to browse in file history.
     Dev Note (Germar): Maybe use Qt.BackButton and Qt.ForwardButton instead.
     """
+
     def __init__(self, mainWindow):
         self.mainWindow = mainWindow
         super(ExtraMouseButtonEventFilter, self).__init__()
 
     def eventFilter(self, receiver, event):
         if (event.type() == QEvent.Type.MouseButtonPress
-            and event.button() in (Qt.MouseButton.XButton1, Qt.MouseButton.XButton2)):
+                and event.button() in (Qt.MouseButton.XButton1, Qt.MouseButton.XButton2)):
 
             if event.button() == Qt.MouseButton.XButton1:
                 self.mainWindow.btnFolderHistoryPreviousClicked()
@@ -1947,12 +1950,14 @@ class ExtraMouseButtonEventFilter(QObject):
             return super(ExtraMouseButtonEventFilter, self) \
                 .eventFilter(receiver, event)
 
+
 class RemoveSnapshotThread(QThread):
     """
     remove snapshots in background thread so GUI will not freeze
     """
     refreshSnapshotList = pyqtSignal()
     hideTimelineItem = pyqtSignal(qttools.SnapshotItem)
+
     def __init__(self, parent, items):
         self.config = parent.config
         self.snapshots = parent.snapshots
@@ -1963,8 +1968,8 @@ class RemoveSnapshotThread(QThread):
         last_snapshot = snapshots.lastSnapshot(self.config)
         renew_last_snapshot = False
         #inhibit suspend/hibernate during delete
-        self.config.inhibitCookie = tools.inhibitSuspend(toplevel_xid = self.config.xWindowId,
-                                                         reason = 'deleting snapshots')
+        self.config.inhibitCookie = tools.inhibitSuspend(toplevel_xid=self.config.xWindowId,
+                                                         reason='deleting snapshots')
 
         for item, sid in [(x, x.snapshotID()) for x in self.items]:
             self.snapshots.remove(sid)
@@ -1982,11 +1987,13 @@ class RemoveSnapshotThread(QThread):
         if self.config.inhibitCookie:
             self.config.inhibitCookie = tools.unInhibitSuspend(*self.config.inhibitCookie)
 
+
 class FillTimeLineThread(QThread):
     """
     add snapshot IDs to timeline in background
     """
     addSnapshot = pyqtSignal(snapshots.SID)
+
     def __init__(self, parent):
         self.parent = parent
         self.config = parent.config
@@ -1999,16 +2006,19 @@ class FillTimeLineThread(QThread):
 
         self.parent.snapshotsList.sort()
 
+
 class SetupCron(QThread):
     """
     Check crontab entries on startup.
     """
+
     def __init__(self, parent):
         self.config = parent.config
         super(SetupCron, self).__init__(parent)
 
     def run(self):
         self.config.setupCron()
+
 
 def debugTrace():
     """
@@ -2018,15 +2028,16 @@ def debugTrace():
     pyqtRemoveInputHook()
     set_trace()
 
+
 if __name__ == '__main__':
     cfg = backintime.startApp('backintime-qt')
 
     raiseCmd = ''
     if len(sys.argv) > 1:
-        raiseCmd = '\n'.join(sys.argv[1 :])
+        raiseCmd = '\n'.join(sys.argv[1:])
 
     appInstance = guiapplicationinstance.GUIApplicationInstance(cfg.appInstanceFile(), raiseCmd)
-    cfg.PLUGIN_MANAGER.load(cfg = cfg)
+    cfg.PLUGIN_MANAGER.load(cfg=cfg)
     cfg.PLUGIN_MANAGER.appStart()
 
     logger.openlog()
