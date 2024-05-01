@@ -1353,10 +1353,12 @@ class MainWindow(QMainWindow):
     def btnShutdownToggled(self, checked):
         self.shutdown.activate_shutdown = checked
         if self.shutdown.canSuspend():
+            self.shutdown.activate_suspend = False
             self.act_suspend.setEnabled(not checked)
 
     def btnSuspendToggled(self, checked):
         self.shutdown.activate_suspend = checked
+        self.shutdown.activate_shutdown = False
         self.act_shutdown.setEnabled(not checked)
 
     def contextMenuClicked(self, point):
