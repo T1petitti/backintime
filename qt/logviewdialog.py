@@ -111,6 +111,8 @@ class LogViewDialog(QDialog):
         self.comboFilter.addItem(_('Changes'), snapshotlog.LogFilter.CHANGES)
         self.comboFilter.addItem(_('Information'), snapshotlog.LogFilter.INFORMATION)
         self.comboFilter.addItem(_('rsync transfer failures (experimental)'), snapshotlog.LogFilter.RSYNC_TRANSFER_FAILURES)
+        self.comboFilter.addItem(_('Rsync Help'), snapshotlog.LogFilter.RSYNC_HELP)
+
 
         # text view
         self.txtLogView = QPlainTextEdit(self)
@@ -120,7 +122,7 @@ class LogViewDialog(QDialog):
         self.mainLayout.addWidget(self.txtLogView)
 
         #
-        self.mainLayout.addWidget(QLabel(_('[E] Error, [I] Information, [C] Change')))
+        self.mainLayout.addWidget(QLabel(_('[E] Error, [I] Information, [C] Change, [R] Rsync Help')))
 
         #decode path
         self.cbDecode = QCheckBox(_('decode paths'), self)
@@ -132,9 +134,14 @@ class LogViewDialog(QDialog):
         self.mainLayout.addWidget(buttonBox)
         buttonBox.rejected.connect(self.close)
 
+
+
+
         self.updateSnapshots()
         self.updateDecode()
         self.updateProfiles()
+
+
 
         # watch for changes in log file
         self.watcher = QFileSystemWatcher(self)
@@ -146,6 +153,55 @@ class LogViewDialog(QDialog):
 
         self.txtLogView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.txtLogView.customContextMenuRequested.connect(self.contextMenuClicked)
+
+
+
+    def displayRsyncInfo(self):
+        if self.comboFilter.currentIndex() == 6:
+            self.txtLogView.setPlainText("From Rsync Man Page https://download.samba.org/pub/rsync/rsync.1#opt--itemize-changes\n"
+                                         "For a more compact explanation visit https://stackoverflow.com/a/36851784")
+            self.txtLogView.appendPlainText("\nThe %i escape has a cryptic output that is 11 letters long. The general format is\n"
+                                            "like the string YXcstpoguax, where Y is replaced by the type of update being done,\n"
+                                            "X is replaced by the file-type, and the other letters represent attributes that may\n"
+                                            "be output if they are being modified.\n\n"
+                                            "The update types that replace the Y are as follows:\n"
+                                            "- < means that a file is being transferred to the remote host (sent).\n"
+                                            "- > means that a file is being transferred to the local host (received).\n"
+                                            "- c means that a local change/creation is occurring for the item (such as the\n "
+                                            "creation of a directory or the changing of a symlink, etc.).\n"
+                                            "- h means that the item is a hard link to another item (requires --hard-links)\n"
+                                            "- . means that the item is not being updated (though it might have attributes\n"
+                                            "that are being modified).\n"
+                                            "- * means that the rest of the itemized-output area contains a message\n(e.g. deleting).\n\n"
+                                            "The file-types that replace the X are: f for a file, a d for a directory,\n"
+                                            "an L for a symlink,a D for a device, and a S for a special file \n(e.g. named sockets and fifos).\n"
+                                            "The other letters in the string indicate if some attributes of the file have changed,\n as follows:\n"
+                                            ". - the attribute is unchanged.\n+ - the file is newly created.\n" " - all the attributes are unchanged (all dots turn to spaces).\n"
+                                            "? - the change is unknown (when the remote rsync is old).\nA letter indicates an attribute is being updated.\n\n"
+                                            "The attribute that is associated with each letter is as follows:\n\n"
+                                            "- A c means either that a regular file has a different checksum (requires --checksum)\n"
+                                            "or that a symlink, device, or special file has a changed value. Note that if you are\n"
+                                            "sending files to an rsync prior to 3.0.1, this change flag will be present only for\nchecksum-differing regular files.\n"
+                                            "- A s means the size of a regular file is different and will be updated\n by the file transfer.\n"
+                                            "- A t means the modification time is different and is being updated to the\n"
+                                            "sender's value (requires--times). An alternate value of T means that the modification\n"
+                                            "time will be set to the transfer time, which happens when a file/symlink/device is\n"
+                                            "updated without --times and when a symlink is changed and the receiver can't set its\n"
+                                            "time. (Note: when using an rsync 3.0.0 client, you might see the s flag combined with\n"
+                                            "t instead of the proper T flag for this time-setting failure.)\n"
+                                            "- A p means the permissions are different and are being updated to the\nsender's value (requires --perms).\n"
+                                            "- An o means the owner is different and is being updated to the sender's value\n(requires --owner and super-user privileges).\n"
+                                            "- A g means the group is different and is being updated to the sender's value\n(requires --group and the authority to set the group).\n"
+                                            "- A u|n|b indicates the following information:\n\t"
+                                            "- u means the access (use) time is different and is being updated to the\n\tsender's value (requires --atimes)\n\t"
+                                            "- n means the create time (newness) is different and is being updated to\n\tthe sender's value (requires --crtimes)\n\t"
+                                            "- b means that both the access and create times are being updated\n"
+                                            "- The a means that the ACL information is being changed.\n- The x means that the extended attribute information is being changed.\n\n"
+                                            "One other output is possible: when deleting files, the %i will output the\n"
+                                            "string '*deleting' for each item that is being removed (assuming that you are talking\n"
+                                            "to a recent enough rsync that it logs deletions instead of outputting them as a\nverbose message)."
+                                            )
+
 
     def cbDecodeChanged(self):
         if self.cbDecode.isChecked():
@@ -246,9 +302,12 @@ class LogViewDialog(QDialog):
             return
 
         mode = self.comboFilter.itemData(self.comboFilter.currentIndex())
+        # self.displayRsyncInfo()
+
 
         # TODO This expressions is hard to understand (watchPath is not a boolean!)
         if watchPath and self.sid is None:
+            self.displayRsyncInfo()
             # remove path from watch to prevent multiple updates at the same time
             self.watcher.removePath(watchPath)
             # append only new lines to txtLogView
@@ -266,8 +325,10 @@ class LogViewDialog(QDialog):
         elif self.sid is None:
             log = snapshotlog.SnapshotLog(self.config, self.comboProfiles.currentProfileID())
             self.txtLogView.setPlainText('\n'.join(log.get(mode = mode, decode = self.decode)))
+            self.displayRsyncInfo()
         else:
             self.txtLogView.setPlainText('\n'.join(self.sid.log(mode, decode = self.decode)))
+            self.displayRsyncInfo()
 
     def closeEvent(self, event):
         self.config.setIntValue('qt.logview.width', self.width())
