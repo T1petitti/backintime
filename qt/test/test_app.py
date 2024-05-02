@@ -32,6 +32,7 @@ class TestMainWindow(unittest.TestCase):
 
         # Mock exit to prevent it from actually exiting the Python interpreter
         with patch("builtins.exit") as mock_exit:
+            sys.argv = [""]
             self.cfg = backintime.startApp('backintime-qt')
 
             raiseCmd = ''
