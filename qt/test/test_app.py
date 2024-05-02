@@ -63,7 +63,7 @@ class TestMainWindow(unittest.TestCase):
         # Allow time for the application to finish processing events
         for _ in range(100):
             self.qapp.processEvents()
-            time.sleep(0.001)
+            time.sleep(0.005)
 
     def add_default_prefs(self, list_to_append):
         """Add default preferences to list."""
